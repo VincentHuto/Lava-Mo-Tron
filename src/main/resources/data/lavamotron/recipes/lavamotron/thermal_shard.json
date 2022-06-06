@@ -1,0 +1,10 @@
+{
+  "type" : "lavamotron:lavamotron",
+  "ingredient" : {
+    "item" : "minecraft:obsidian"
+  },
+  "result" : "lavamotron:thermal_shard",
+    "count": 4,
+  "experience" : 2.0,
+  "cookingtime" : 400
+}
