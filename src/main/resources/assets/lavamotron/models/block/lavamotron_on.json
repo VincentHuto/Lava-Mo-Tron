@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "top": "lavamotron:block/lavamotron_top",
+    "front": "lavamotron:block/lavamotron_front_on",
+    "side": "lavamotron:block/lavamotron_side"
+  }
+}
