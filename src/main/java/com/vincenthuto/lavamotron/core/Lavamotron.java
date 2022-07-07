@@ -4,6 +4,7 @@ import java.util.function.ToIntFunction;
 
 import com.vincenthuto.lavamotron.menu.LavamotronMenu;
 import com.vincenthuto.lavamotron.menu.LavamotronScreen;
+import com.vincenthuto.lavamotron.network.PacketHandler;
 import com.vincenthuto.lavamotron.objects.LavamotronBlock;
 import com.vincenthuto.lavamotron.objects.LavamotronBlockEntity;
 import com.vincenthuto.lavamotron.objects.LavamotronItemBlock;
@@ -28,7 +29,6 @@ import net.minecraft.world.level.material.Material;
 import net.minecraft.world.level.material.MaterialColor;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.extensions.IForgeMenuType;
-import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
@@ -76,7 +76,7 @@ public class Lavamotron {
 
 	public static final RegistryObject<MenuType<LavamotronMenu>> lavamotron_menu = CONTAINERS.register("lavamotron",
 			() -> IForgeMenuType.create(LavamotronMenu::new));
-	
+
 	// Recipes
 	public static RecipeType<LavamotronRecipe> lavamotron_recipe_type;
 	public static final RegistryObject<RecipeSerializer<?>> lavamotron_serializer = SERIALIZERS.register("lavamotron",
@@ -107,6 +107,8 @@ public class Lavamotron {
 	}
 
 	private void setupCommon(final FMLCommonSetupEvent event) {
+		PacketHandler.registerChannels();
+
 		event.enqueueWork(() -> {
 			initRecipeTypes();
 		});

@@ -186,12 +186,12 @@ public class LavamotronMenu extends AbstractContainerMenu {
 		return p_150463_ != 1;
 	}
 
-	public LavamotronBlockEntity getTe() {
-		return te;
-	}
-
 	@Override
 	public void setData(int p_38855_, int p_38856_) {
 		super.setData(p_38855_, p_38856_);
+	}
+
+	public LavamotronBlockEntity getTe() {
+		return this.te;
 	}
 }

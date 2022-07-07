@@ -83,6 +83,7 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 	public int litDuration;
 	public int cookingProgress;
 	public int cookingTotalTime;
+	public boolean liquidMode;
 
 	// Fluid Stuff
 	public FluidTank tank = new FluidTank(10000);
@@ -100,96 +101,9 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 		return this.litTime > 0;
 	}
 
-	public void load(CompoundTag p_155025_) {
-		super.load(p_155025_);
-		tank.readFromNBT(p_155025_);
-		this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
-		ContainerHelper.loadAllItems(p_155025_, this.items);
-		this.litTime = p_155025_.getInt("BurnTime");
-		this.cookingProgress = p_155025_.getInt("CookTime");
-		this.cookingTotalTime = p_155025_.getInt("CookTimeTotal");
-		this.litDuration = this.getBurnDuration(this.items.get(1));
-		CompoundTag compoundtag = p_155025_.getCompound("RecipesUsed");
-		for (String s : compoundtag.getAllKeys()) {
-			this.recipesUsed.put(new ResourceLocation(s), compoundtag.getInt(s));
-		}
-
-	}
-
-	@Override
-	public void saveAdditional(CompoundTag p_58379_) {
-		super.saveAdditional(p_58379_);
-		tank.writeToNBT(p_58379_);
-		p_58379_.putInt("BurnTime", this.litTime);
-		p_58379_.putInt("CookTime", this.cookingProgress);
-		p_58379_.putInt("CookTimeTotal", this.cookingTotalTime);
-		ContainerHelper.saveAllItems(p_58379_, this.items);
-		CompoundTag compoundtag = new CompoundTag();
-		this.recipesUsed.forEach((p_58382_, p_58383_) -> {
-			compoundtag.putInt(p_58382_.toString(), p_58383_);
-		});
-		p_58379_.put("RecipesUsed", compoundtag);
-
-	}
-
-	@Override
-	public void handleUpdateTag(CompoundTag tag) {
-		super.handleUpdateTag(tag);
-		tank.readFromNBT(tag);
-		this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
-		ContainerHelper.loadAllItems(tag, this.items);
-		this.litTime = tag.getInt("BurnTime");
-		this.cookingProgress = tag.getInt("CookTime");
-		this.cookingTotalTime = tag.getInt("CookTimeTotal");
-		this.litDuration = this.getBurnDuration(this.items.get(1));
-		CompoundTag compoundtag = tag.getCompound("RecipesUsed");
-		for (String s : compoundtag.getAllKeys()) {
-			this.recipesUsed.put(new ResourceLocation(s), compoundtag.getInt(s));
-		}
-	}
-
-	@Override
-	public final CompoundTag getUpdateTag() {
-		CompoundTag tag = new CompoundTag();
-		tank.writeToNBT(tag);
-		tag.putInt("BurnTime", this.litTime);
-		tag.putInt("CookTime", this.cookingProgress);
-		tag.putInt("CookTimeTotal", this.cookingTotalTime);
-
-		ContainerHelper.saveAllItems(tag, this.items);
-		CompoundTag compoundtag = new CompoundTag();
-		this.recipesUsed.forEach((p_58382_, p_58383_) -> {
-			compoundtag.putInt(p_58382_.toString(), p_58383_);
-		});
-		tag.put("RecipesUsed", compoundtag);
-		return tag;
-	}
-
-	@Override
-	public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
-		super.onDataPacket(net, pkt);
-		CompoundTag p_155025_ = pkt.getTag();
-		tank.readFromNBT(p_155025_);
-		this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
-		ContainerHelper.loadAllItems(p_155025_, this.items);
-		this.litTime = p_155025_.getInt("BurnTime");
-
-		this.cookingProgress = p_155025_.getInt("CookTime");
-		this.cookingTotalTime = p_155025_.getInt("CookTimeTotal");
-		this.litDuration = this.getBurnDuration(this.items.get(1));
-		CompoundTag compoundtag = p_155025_.getCompound("RecipesUsed");
-		for (String s : compoundtag.getAllKeys()) {
-			this.recipesUsed.put(new ResourceLocation(s), compoundtag.getInt(s));
-		}
-	}
-
-	@Override
-	public ClientboundBlockEntityDataPacket getUpdatePacket() {
-		return ClientboundBlockEntityDataPacket.create(this);
-	}
-
 	@SuppressWarnings("unchecked")
 	public static void serverTick(Level level, BlockPos pos, BlockState state, LavamotronBlockEntity te) {
+		level.sendBlockUpdated(pos, state, state, 2);
 
 		boolean flag = te.isLit();
 		boolean flag1 = false;
@@ -203,9 +117,7 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 				te.items.set(4, new ItemStack(Items.LAVA_BUCKET));
 				te.tank.drain(new FluidStack(te.tank.getFluid(), 1000), FluidAction.EXECUTE);
 			}
-
 		}
-
 		if (te.isLit() || !itemstack.isEmpty() && !te.items.get(0).isEmpty()) {
 			Recipe<?> recipe = level.getRecipeManager()
 					.getRecipeFor((RecipeType<AbstractCookingRecipe>) te.recipeType, te, level).orElse(null);
@@ -262,16 +174,34 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 			if (itemstack.isEmpty()) {
 				return false;
 			} else {
-				ItemStack itemstack1 = p_155007_.get(2);
-				if (itemstack1.isEmpty()) {
-					return true;
-				} else if (!itemstack1.sameItem(itemstack)) {
-					return false;
-				} else if (itemstack1.getCount() + itemstack.getCount() <= p_155008_
-						&& itemstack1.getCount() + itemstack.getCount() <= itemstack1.getMaxStackSize()) { // Forge fix:
-					return true;
+				ItemStack resultStack = p_155007_.get(2);
+				if (liquidMode) {
+					if (tank.getFluidAmount() < tank.getCapacity()) {
+						return true;
+					} else {
+						if (resultStack.isEmpty()) {
+							return true;
+						} else if (!resultStack.sameItem(itemstack)) {
+							return false;
+						} else if (resultStack.getCount() + itemstack.getCount() <= p_155008_
+								&& resultStack.getCount() + itemstack.getCount() <= resultStack.getMaxStackSize()) { // fix:
+							return true;
+						} else {
+							return resultStack.getCount() + itemstack.getCount() <= itemstack.getMaxStackSize(); // Forge
+						}
+					}
 				} else {
-					return itemstack1.getCount() + itemstack.getCount() <= itemstack.getMaxStackSize(); // Forge fix:
+					if (resultStack.isEmpty()) {
+						return true;
+					} else if (!resultStack.sameItem(itemstack)) {
+						return false;
+					} else if (resultStack.getCount() + itemstack.getCount() <= p_155008_
+							&& resultStack.getCount() + itemstack.getCount() <= resultStack.getMaxStackSize()) { // fix:
+						return true;
+					} else {
+						return resultStack.getCount() + itemstack.getCount() <= itemstack.getMaxStackSize(); // Forge
+						// fix:
+					}
 				}
 			}
 		} else {
@@ -283,27 +213,50 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 		if (p_155027_ != null && this.canBurn(p_155027_, p_155028_, p_155029_)) {
 			ItemStack itemstack = p_155028_.get(0);
 			@SuppressWarnings("unchecked")
-			ItemStack itemstack1 = ((Recipe<WorldlyContainer>) p_155027_).assemble(this);
-			ItemStack itemstack2 = p_155028_.get(2);
-
-			if (p_155028_.get(3).isEmpty()) {
-				if (itemstack2.isEmpty()) {
-					p_155028_.set(2, itemstack1.copy());
-				} else if (itemstack2.is(itemstack1.getItem())) {
-					itemstack2.grow(itemstack1.getCount());
+			ItemStack resultStack = ((Recipe<WorldlyContainer>) p_155027_).assemble(this);
+			ItemStack currentResultStack = p_155028_.get(2);
+			if (!liquidMode) {
+				if (p_155028_.get(3).isEmpty()) {
+					if (currentResultStack.isEmpty()) {
+						p_155028_.set(2, resultStack.copy());
+					} else if (currentResultStack.is(resultStack.getItem())) {
+						currentResultStack.grow(resultStack.getCount());
+					}
+				} else {
+					if (currentResultStack.isEmpty()) {
+						if (!liquidMode) {
+							p_155028_.set(2, new ItemStack(Items.LAVA_BUCKET));
+							p_155028_.get(3).shrink(1);
+						}
+					} else {
+						if (!liquidMode) {
+							currentResultStack.grow(currentResultStack.getCount());
+							this.cookingProgress = 0;
+						}
+					}
 				}
 			} else {
-				if (itemstack2.isEmpty()) {
-					p_155028_.set(2, new ItemStack(Items.LAVA_BUCKET));
-					p_155028_.get(3).shrink(1);
+				if (tank.getFluidAmount() < tank.getCapacity()) {
+					tank.fill(new FluidStack(Fluids.LAVA, 1000), FluidAction.EXECUTE);
 				} else {
-					itemstack2.grow(itemstack1.getCount());
-					this.cookingProgress = 0;
+					if (p_155028_.get(3).isEmpty()) {
+						if (currentResultStack.isEmpty()) {
+							p_155028_.set(2, resultStack.copy());
+						} else if (currentResultStack.is(resultStack.getItem())) {
+							currentResultStack.grow(resultStack.getCount());
+						}
+					} else {
+						if (currentResultStack.isEmpty()) {
+							p_155028_.set(2, new ItemStack(Items.LAVA_BUCKET));
+							p_155028_.get(3).shrink(1);
+						} else {
+							currentResultStack.grow(currentResultStack.getCount());
+							this.cookingProgress = 0;
+						}
+					}
 				}
 			}
 			itemstack.shrink(1);
-			tank.fill(new FluidStack(Fluids.LAVA, 5120), FluidAction.EXECUTE);
-
 			return true;
 		} else {
 			return false;
@@ -522,5 +475,112 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 		result = FluidUtil.tryFillContainerAndStow(stack, tank, inv, Integer.MAX_VALUE, player,
 				!getLevel().isClientSide());
 		return result.getResult();
+	}
+
+//NBT STUFF
+	public void load(CompoundTag p_155025_) {
+		super.load(p_155025_);
+		tank.readFromNBT(p_155025_);
+		this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
+		ContainerHelper.loadAllItems(p_155025_, this.items);
+		this.litTime = p_155025_.getInt("BurnTime");
+		this.cookingProgress = p_155025_.getInt("CookTime");
+		this.cookingTotalTime = p_155025_.getInt("CookTimeTotal");
+		this.litDuration = this.getBurnDuration(this.items.get(1));
+		CompoundTag compoundtag = p_155025_.getCompound("RecipesUsed");
+		for (String s : compoundtag.getAllKeys()) {
+			this.recipesUsed.put(new ResourceLocation(s), compoundtag.getInt(s));
+		}
+		this.liquidMode = p_155025_.getBoolean("LiquidMode");
+	}
+
+	@Override
+	public void saveAdditional(CompoundTag p_58379_) {
+		super.saveAdditional(p_58379_);
+		tank.writeToNBT(p_58379_);
+		p_58379_.putInt("BurnTime", this.litTime);
+		p_58379_.putInt("CookTime", this.cookingProgress);
+		p_58379_.putInt("CookTimeTotal", this.cookingTotalTime);
+		ContainerHelper.saveAllItems(p_58379_, this.items);
+		CompoundTag compoundtag = new CompoundTag();
+		this.recipesUsed.forEach((p_58382_, p_58383_) -> {
+			compoundtag.putInt(p_58382_.toString(), p_58383_);
+		});
+		p_58379_.put("RecipesUsed", compoundtag);
+		p_58379_.putBoolean("LiquidMode", this.liquidMode);
+	}
+
+	@Override
+	public void handleUpdateTag(CompoundTag tag) {
+		super.handleUpdateTag(tag);
+		tank.readFromNBT(tag);
+		this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
+		ContainerHelper.loadAllItems(tag, this.items);
+		this.litTime = tag.getInt("BurnTime");
+		this.cookingProgress = tag.getInt("CookTime");
+		this.cookingTotalTime = tag.getInt("CookTimeTotal");
+		this.litDuration = this.getBurnDuration(this.items.get(1));
+		CompoundTag compoundtag = tag.getCompound("RecipesUsed");
+		for (String s : compoundtag.getAllKeys()) {
+			this.recipesUsed.put(new ResourceLocation(s), compoundtag.getInt(s));
+		}
+		this.liquidMode = tag.getBoolean("LiquidMode");
+	}
+
+	@Override
+	public final CompoundTag getUpdateTag() {
+		CompoundTag tag = new CompoundTag();
+		tank.writeToNBT(tag);
+		tag.putInt("BurnTime", this.litTime);
+		tag.putInt("CookTime", this.cookingProgress);
+		tag.putInt("CookTimeTotal", this.cookingTotalTime);
+		ContainerHelper.saveAllItems(tag, this.items);
+		CompoundTag compoundtag = new CompoundTag();
+		this.recipesUsed.forEach((p_58382_, p_58383_) -> {
+			compoundtag.putInt(p_58382_.toString(), p_58383_);
+		});
+		tag.put("RecipesUsed", compoundtag);
+		tag.putBoolean("LiquidMode", this.liquidMode);
+		return tag;
+	}
+
+	@Override
+	public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
+		super.onDataPacket(net, pkt);
+		CompoundTag p_155025_ = pkt.getTag();
+		tank.readFromNBT(p_155025_);
+		this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
+		ContainerHelper.loadAllItems(p_155025_, this.items);
+		this.litTime = p_155025_.getInt("BurnTime");
+
+		this.cookingProgress = p_155025_.getInt("CookTime");
+		this.cookingTotalTime = p_155025_.getInt("CookTimeTotal");
+		this.litDuration = this.getBurnDuration(this.items.get(1));
+		CompoundTag compoundtag = p_155025_.getCompound("RecipesUsed");
+		for (String s : compoundtag.getAllKeys()) {
+			this.recipesUsed.put(new ResourceLocation(s), compoundtag.getInt(s));
+		}
+		this.liquidMode = p_155025_.getBoolean("LiquidMode");
+
+	}
+
+	@Override
+	public ClientboundBlockEntityDataPacket getUpdatePacket() {
+		return ClientboundBlockEntityDataPacket.create(this);
+	}
+
+	public boolean getLiquidMode() {
+		return liquidMode;
+	}
+
+	public void setLiquidMode(boolean liquidModeIn) {
+		liquidMode = liquidModeIn;
+		this.sendUpdates();
+	}
+
+	public void sendUpdates() {
+		level.setBlocksDirty(worldPosition, getBlockState(), getBlockState());
+		level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 2);
+		setChanged();
 	}
 }
