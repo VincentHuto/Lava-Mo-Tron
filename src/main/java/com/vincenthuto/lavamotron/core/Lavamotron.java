@@ -27,6 +27,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.material.Material;
 import net.minecraft.world.level.material.MaterialColor;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.extensions.IForgeMenuType;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
@@ -53,6 +54,10 @@ public class Lavamotron {
 
 	public static final DeferredRegister<RecipeSerializer<?>> SERIALIZERS = DeferredRegister
 			.create(ForgeRegistries.RECIPE_SERIALIZERS, MOD_ID);
+
+	public static final DeferredRegister<MenuType<?>> CONTAINERS = DeferredRegister.create(ForgeRegistries.CONTAINERS,
+			MOD_ID);
+
 	// Objects
 	public static final RegistryObject<Block> lavamotron_block = BLOCKS.register("lavamotron",
 			() -> new LavamotronBlock(BlockBehaviour.Properties.of(Material.STONE, MaterialColor.STONE)
@@ -69,6 +74,9 @@ public class Lavamotron {
 			"lavamotron",
 			() -> BlockEntityType.Builder.of(LavamotronBlockEntity::new, lavamotron_block.get()).build(null));
 
+	public static final RegistryObject<MenuType<LavamotronMenu>> lavamotron_menu = CONTAINERS.register("lavamotron",
+			() -> IForgeMenuType.create(LavamotronMenu::new));
+	
 	// Recipes
 	public static RecipeType<LavamotronRecipe> lavamotron_recipe_type;
 	public static final RegistryObject<RecipeSerializer<?>> lavamotron_serializer = SERIALIZERS.register("lavamotron",
@@ -78,11 +86,11 @@ public class Lavamotron {
 		final IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setupCommon);
 		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setupClient);
-		modEventBus.addGenericListener(MenuType.class, this::registerContainers);
 		MinecraftForge.EVENT_BUS.register(this);
 		ITEMS.register(modEventBus);
 		BLOCKS.register(modEventBus);
 		SERIALIZERS.register(modEventBus);
+		CONTAINERS.register(modEventBus);
 		TILES.register(modEventBus);
 
 	}
@@ -93,14 +101,9 @@ public class Lavamotron {
 		};
 	}
 
-	private void registerContainers(RegistryEvent.Register<MenuType<?>> event) {
-		event.getRegistry().registerAll(new MenuType<>(LavamotronMenu::new).setRegistryName("lavamotron"));
-	}
-
 	private void setupClient(final FMLClientSetupEvent event) {
-		event.enqueueWork(() -> {
-			MenuScreens.register(LavamotronMenu.TYPE, LavamotronScreen::new);
-		});
+		MenuScreens.register(lavamotron_menu.get(), LavamotronScreen::new);
+
 	}
 
 	private void setupCommon(final FMLCommonSetupEvent event) {

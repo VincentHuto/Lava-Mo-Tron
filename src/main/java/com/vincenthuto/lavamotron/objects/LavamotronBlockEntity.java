@@ -13,9 +13,14 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
+import net.minecraft.nbt.ByteArrayTag;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -28,20 +33,32 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.StackedContents;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.RecipeHolder;
 import net.minecraft.world.inventory.StackedContentsCompatible;
+import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemUtils;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ClipContext.Fluid;
 import net.minecraft.world.level.block.AbstractFurnaceBlock;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.fluids.FluidActionResult;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidUtil;
+import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
+import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.minecraftforge.fluids.capability.IFluidHandler.FluidAction;
+import net.minecraftforge.fluids.capability.templates.FluidTank;
+import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.wrapper.PlayerInvWrapper;
 import net.minecraftforge.items.wrapper.SidedInvWrapper;
 
 public class LavamotronBlockEntity extends BaseContainerBlockEntity
@@ -61,47 +78,17 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 	public static final int NUM_DATA_VALUES = 4;
 	public static final int BURN_TIME_STANDARD = 200;
 	public static final int BURN_COOL_SPEED = 2;
-	public NonNullList<ItemStack> items = NonNullList.withSize(4, ItemStack.EMPTY);
-	int litTime;
-	int litDuration;
-	int cookingProgress;
-	int cookingTotalTime;
-	protected final ContainerData dataAccess = new ContainerData() {
-		public int get(int p_58431_) {
-			switch (p_58431_) {
-			case 0:
-				return litTime;
-			case 1:
-				return litDuration;
-			case 2:
-				return cookingProgress;
-			case 3:
-				return cookingTotalTime;
-			default:
-				return 0;
-			}
-		}
+	public NonNullList<ItemStack> items = NonNullList.withSize(5, ItemStack.EMPTY);
+	public int litTime;
+	public int litDuration;
+	public int cookingProgress;
+	public int cookingTotalTime;
 
-		public void set(int p_58433_, int p_58434_) {
-			switch (p_58433_) {
-			case 0:
-				litTime = p_58434_;
-				break;
-			case 1:
-				litDuration = p_58434_;
-				break;
-			case 2:
-				cookingProgress = p_58434_;
-				break;
-			case 3:
-				cookingTotalTime = p_58434_;
-			}
-		}
+	// Fluid Stuff
+	public FluidTank tank = new FluidTank(10000);
+	public final LazyOptional<IFluidHandler> holder = LazyOptional.of(() -> tank);
+	protected LazyOptional<?> outputFluidCap = LazyOptional.empty();
 
-		public int getCount() {
-			return 4;
-		}
-	};
 	private final Object2IntOpenHashMap<ResourceLocation> recipesUsed = new Object2IntOpenHashMap<>();
 	private final RecipeType<? extends AbstractCookingRecipe> recipeType = Lavamotron.lavamotron_recipe_type;
 
@@ -115,6 +102,7 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 
 	public void load(CompoundTag p_155025_) {
 		super.load(p_155025_);
+		tank.readFromNBT(p_155025_);
 		this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
 		ContainerHelper.loadAllItems(p_155025_, this.items);
 		this.litTime = p_155025_.getInt("BurnTime");
@@ -128,8 +116,10 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 
 	}
 
+	@Override
 	public void saveAdditional(CompoundTag p_58379_) {
 		super.saveAdditional(p_58379_);
+		tank.writeToNBT(p_58379_);
 		p_58379_.putInt("BurnTime", this.litTime);
 		p_58379_.putInt("CookTime", this.cookingProgress);
 		p_58379_.putInt("CookTimeTotal", this.cookingTotalTime);
@@ -139,65 +129,130 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 			compoundtag.putInt(p_58382_.toString(), p_58383_);
 		});
 		p_58379_.put("RecipesUsed", compoundtag);
+
+	}
+
+	@Override
+	public void handleUpdateTag(CompoundTag tag) {
+		super.handleUpdateTag(tag);
+		tank.readFromNBT(tag);
+		this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
+		ContainerHelper.loadAllItems(tag, this.items);
+		this.litTime = tag.getInt("BurnTime");
+		this.cookingProgress = tag.getInt("CookTime");
+		this.cookingTotalTime = tag.getInt("CookTimeTotal");
+		this.litDuration = this.getBurnDuration(this.items.get(1));
+		CompoundTag compoundtag = tag.getCompound("RecipesUsed");
+		for (String s : compoundtag.getAllKeys()) {
+			this.recipesUsed.put(new ResourceLocation(s), compoundtag.getInt(s));
+		}
+	}
+
+	@Override
+	public final CompoundTag getUpdateTag() {
+		CompoundTag tag = new CompoundTag();
+		tank.writeToNBT(tag);
+		tag.putInt("BurnTime", this.litTime);
+		tag.putInt("CookTime", this.cookingProgress);
+		tag.putInt("CookTimeTotal", this.cookingTotalTime);
+
+		ContainerHelper.saveAllItems(tag, this.items);
+		CompoundTag compoundtag = new CompoundTag();
+		this.recipesUsed.forEach((p_58382_, p_58383_) -> {
+			compoundtag.putInt(p_58382_.toString(), p_58383_);
+		});
+		tag.put("RecipesUsed", compoundtag);
+		return tag;
+	}
+
+	@Override
+	public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
+		super.onDataPacket(net, pkt);
+		CompoundTag p_155025_ = pkt.getTag();
+		tank.readFromNBT(p_155025_);
+		this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
+		ContainerHelper.loadAllItems(p_155025_, this.items);
+		this.litTime = p_155025_.getInt("BurnTime");
+
+		this.cookingProgress = p_155025_.getInt("CookTime");
+		this.cookingTotalTime = p_155025_.getInt("CookTimeTotal");
+		this.litDuration = this.getBurnDuration(this.items.get(1));
+		CompoundTag compoundtag = p_155025_.getCompound("RecipesUsed");
+		for (String s : compoundtag.getAllKeys()) {
+			this.recipesUsed.put(new ResourceLocation(s), compoundtag.getInt(s));
+		}
+	}
+
+	@Override
+	public ClientboundBlockEntityDataPacket getUpdatePacket() {
+		return ClientboundBlockEntityDataPacket.create(this);
 	}
 
 	@SuppressWarnings("unchecked")
-	public static void serverTick(Level p_155014_, BlockPos p_155015_, BlockState p_155016_,
-			LavamotronBlockEntity p_155017_) {
-		boolean flag = p_155017_.isLit();
+	public static void serverTick(Level level, BlockPos pos, BlockState state, LavamotronBlockEntity te) {
+
+		boolean flag = te.isLit();
 		boolean flag1 = false;
-		if (p_155017_.isLit()) {
-			--p_155017_.litTime;
+		if (te.isLit()) {
+			--te.litTime;
 		}
-		ItemStack itemstack = p_155017_.items.get(1);
-		if (p_155017_.isLit() || !itemstack.isEmpty() && !p_155017_.items.get(0).isEmpty()) {
-			Recipe<?> recipe = p_155014_.getRecipeManager()
-					.getRecipeFor((RecipeType<AbstractCookingRecipe>) p_155017_.recipeType, p_155017_, p_155014_)
-					.orElse(null);
-			int i = p_155017_.getMaxStackSize();
-			if (!p_155017_.isLit() && p_155017_.canBurn(recipe, p_155017_.items, i)) {
-				p_155017_.litTime = p_155017_.getBurnDuration(itemstack);
-				p_155017_.litDuration = p_155017_.litTime;
-				if (p_155017_.isLit()) {
+		ItemStack itemstack = te.items.get(1);
+		ItemStack fillStack = te.items.get(4);
+		if (!fillStack.isEmpty()) {
+			if (fillStack.getItem() == Items.BUCKET && te.tank.getFluidAmount() >= 1000) {
+				te.items.set(4, new ItemStack(Items.LAVA_BUCKET));
+				te.tank.drain(new FluidStack(te.tank.getFluid(), 1000), FluidAction.EXECUTE);
+			}
+
+		}
+
+		if (te.isLit() || !itemstack.isEmpty() && !te.items.get(0).isEmpty()) {
+			Recipe<?> recipe = level.getRecipeManager()
+					.getRecipeFor((RecipeType<AbstractCookingRecipe>) te.recipeType, te, level).orElse(null);
+			int i = te.getMaxStackSize();
+			if (!te.isLit() && te.canBurn(recipe, te.items, i)) {
+				te.litTime = te.getBurnDuration(itemstack);
+				te.litDuration = te.litTime;
+				if (te.isLit()) {
 					flag1 = true;
 					if (itemstack.hasContainerItem())
-						p_155017_.items.set(1, itemstack.getContainerItem());
+						te.items.set(1, itemstack.getContainerItem());
 					else if (!itemstack.isEmpty()) {
 						itemstack.getItem();
 						itemstack.shrink(1);
 						if (itemstack.isEmpty()) {
-							p_155017_.items.set(1, itemstack.getContainerItem());
+							te.items.set(1, itemstack.getContainerItem());
 						}
 					}
 				}
 			}
-			if (p_155017_.isLit() && p_155017_.canBurn(recipe, p_155017_.items, i)) {
-				++p_155017_.cookingProgress;
-				if (p_155017_.cookingProgress == p_155017_.cookingTotalTime) {
-					p_155017_.cookingProgress = 0;
-					p_155017_.cookingTotalTime = getTotalCookTime(p_155014_, p_155017_.recipeType, p_155017_);
-					if (p_155017_.burn(recipe, p_155017_.items, i)) {
-						p_155017_.setRecipeUsed(recipe);
+			if (te.isLit() && te.canBurn(recipe, te.items, i)) {
+				++te.cookingProgress;
+				if (te.cookingProgress == te.cookingTotalTime) {
+					te.cookingProgress = 0;
+					te.cookingTotalTime = getTotalCookTime(level, te.recipeType, te);
+					if (te.burn(recipe, te.items, i)) {
+						te.setRecipeUsed(recipe);
 					}
 					flag1 = true;
 				}
 			} else {
-				p_155017_.cookingProgress = 0;
+				te.cookingProgress = 0;
 			}
-		} else if (!p_155017_.isLit() && p_155017_.cookingProgress > 0) {
-			p_155017_.cookingProgress = Mth.clamp(p_155017_.cookingProgress - 2, 0, p_155017_.cookingTotalTime);
+		} else if (!te.isLit() && te.cookingProgress > 0) {
+			te.cookingProgress = Mth.clamp(te.cookingProgress - 2, 0, te.cookingTotalTime);
 		}
 
-		if (flag != p_155017_.isLit()) {
+		if (flag != te.isLit()) {
 			flag1 = true;
-			p_155016_ = p_155016_.setValue(AbstractFurnaceBlock.LIT, Boolean.valueOf(p_155017_.isLit()));
-			p_155014_.setBlock(p_155015_, p_155016_, 3);
+			state = state.setValue(AbstractFurnaceBlock.LIT, Boolean.valueOf(te.isLit()));
+			level.setBlock(pos, state, 3);
 		}
 
 		if (flag1) {
-			setChanged(p_155014_, p_155015_, p_155016_);
+			setChanged(level, pos, state);
 		}
-
+		level.sendBlockUpdated(pos, state, state, 2);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -247,6 +302,8 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 				}
 			}
 			itemstack.shrink(1);
+			tank.fill(new FluidStack(Fluids.LAVA, 5120), FluidAction.EXECUTE);
+
 			return true;
 		} else {
 			return false;
@@ -408,8 +465,7 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 	@Override
 	public <T> net.minecraftforge.common.util.LazyOptional<T> getCapability(
 			net.minecraftforge.common.capabilities.Capability<T> capability, @Nullable Direction facing) {
-		if (!this.remove && facing != null
-				&& capability == net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+		if (!this.remove && facing != null && capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
 			switch (facing) {
 			case UP:
 				return handlers[0].cast();
@@ -423,6 +479,9 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 				return handlers[2].cast();
 			}
 		}
+		if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY)
+			return holder.cast();
+
 		return super.getCapability(capability, facing);
 	}
 
@@ -447,7 +506,21 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 	}
 
 	@Override
-	protected AbstractContainerMenu createMenu(int p_58627_, Inventory p_58628_) {
-		return new LavamotronMenu(p_58627_, p_58628_, this, this.dataAccess);
+	protected AbstractContainerMenu createMenu(int id, Inventory player) {
+		return new LavamotronMenu(id, player, this);
+	}
+
+	public ItemStack handleContainerInteraction(ItemStack stack, Player player) {
+		PlayerInvWrapper inv = new PlayerInvWrapper(player.getInventory());
+
+		FluidActionResult result = FluidUtil.tryEmptyContainerAndStow(stack, tank, inv, Integer.MAX_VALUE, player,
+				!getLevel().isClientSide());
+		if (result.isSuccess()) {
+			return result.getResult();
+		}
+
+		result = FluidUtil.tryFillContainerAndStow(stack, tank, inv, Integer.MAX_VALUE, player,
+				!getLevel().isClientSide());
+		return result.getResult();
 	}
 }

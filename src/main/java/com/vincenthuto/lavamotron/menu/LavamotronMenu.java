@@ -1,17 +1,18 @@
 package com.vincenthuto.lavamotron.menu;
 
-import com.vincenthuto.lavamotron.core.Lavamotron;
+import java.util.Objects;
 
+import com.vincenthuto.lavamotron.core.Lavamotron;
+import com.vincenthuto.lavamotron.objects.LavamotronBlockEntity;
+
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.StackedContents;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.FurnaceResultSlot;
-import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.StackedContentsCompatible;
 import net.minecraft.world.item.ItemStack;
@@ -20,12 +21,9 @@ import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.registries.ObjectHolder;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
 public class LavamotronMenu extends AbstractContainerMenu {
-
-	@ObjectHolder("lavamotron:lavamotron")
-	public static MenuType<LavamotronMenu> TYPE;
 
 	public static final int INGREDIENT_SLOT = 0;
 	public static final int FUEL_SLOT = 1;
@@ -33,24 +31,33 @@ public class LavamotronMenu extends AbstractContainerMenu {
 	public static final int SLOT_COUNT = 4;
 	public static final int DATA_COUNT = 4;
 	private final Container container;
-	private final ContainerData data;
 	protected final Level level;
 	private final RecipeType<? extends AbstractCookingRecipe> recipeType;
+	private final LavamotronBlockEntity te;
 
-	public LavamotronMenu(int windowIdIn, Inventory playerInventoryIn) {
-		this(windowIdIn, playerInventoryIn, new SimpleContainer(4), new SimpleContainerData(4));
+	public LavamotronMenu(final int windowId, final Inventory playerInventory, final FriendlyByteBuf data) {
+		this(windowId, playerInventory, getBlockEntity(playerInventory, data));
+
 	}
 
-	public LavamotronMenu(final int windowId, final Inventory playerInventory, final Container container,
-			final ContainerData containerData) {
-		super(TYPE, windowId);
+	private static LavamotronBlockEntity getBlockEntity(final Inventory playerInv, final FriendlyByteBuf data) {
+		Objects.requireNonNull(playerInv, "playerInventory cannot be null");
+		Objects.requireNonNull(data, "data cannot be null");
+		final BlockEntity tileAtPos = playerInv.player.level.getBlockEntity(data.readBlockPos());
+		if (tileAtPos instanceof LavamotronBlockEntity) {
+			return (LavamotronBlockEntity) tileAtPos;
+		}
+		throw new IllegalStateException("Tile entity is not correct! " + tileAtPos);
+	}
+
+	public LavamotronMenu(final int windowId, final Inventory playerInventory, final LavamotronBlockEntity container) {
+		super(Lavamotron.lavamotron_menu.get(), windowId);
 		this.recipeType = Lavamotron.lavamotron_recipe_type;
-		checkContainerSize(container, 4);
-		checkContainerDataCount(containerData, 4);
 		this.container = container;
-		this.data = containerData;
 		this.level = playerInventory.player.level;
+		this.te = container;
 		this.addSlot(new Slot(container, 0, 56, 17));
+		this.addSlot(new LavamotronBucketSlot(this, container, 4, 147, 63));
 		this.addSlot(new LavamotronBucketSlot(this, container, 3, 30, 35));
 		this.addSlot(new LavamotronFuelSlot(this, container, 1, 56, 53));
 		this.addSlot(new FurnaceResultSlot(playerInventory.player, container, 2, 116, 35));
@@ -62,7 +69,6 @@ public class LavamotronMenu extends AbstractContainerMenu {
 		for (int k = 0; k < 9; ++k) {
 			this.addSlot(new Slot(playerInventory, k, 8 + k * 18, 142));
 		}
-		this.addDataSlots(containerData);
 	}
 
 	public void fillCraftSlotsStackedContents(StackedContents p_38976_) {
@@ -121,10 +127,8 @@ public class LavamotronMenu extends AbstractContainerMenu {
 						return ItemStack.EMPTY;
 					}
 				} else if (itemstack1.getItem() == Items.BUCKET) {
-					if (!this.moveItemStackTo(itemstack1, 1, 4, false)) {
-						return ItemStack.EMPTY;
-					}
-				} else if (index >= 3 && index < 30) {
+
+				} else if (index >= 3 && index != 4 && index < 30) {
 					if (!this.moveItemStackTo(itemstack1, 30, 39, false)) {
 						return ItemStack.EMPTY;
 					}
@@ -161,25 +165,29 @@ public class LavamotronMenu extends AbstractContainerMenu {
 	}
 
 	public int getBurnProgress() {
-		int i = this.data.get(2);
-		int j = this.data.get(3);
+		int i = this.te.cookingProgress;
+		int j = this.te.cookingTotalTime;
 		return j != 0 && i != 0 ? i * 24 / j : 0;
 	}
 
 	public int getLitProgress() {
-		int i = this.data.get(1);
+		int i = this.te.litDuration;
 		if (i == 0) {
 			i = 200;
 		}
-		return this.data.get(0) * 13 / i;
+		return this.te.litTime * 13 / i;
 	}
 
 	public boolean isLit() {
-		return this.data.get(0) > 0;
+		return this.te.litTime > 0;
 	}
 
 	public boolean shouldMoveToInventory(int p_150463_) {
 		return p_150463_ != 1;
+	}
+
+	public LavamotronBlockEntity getTe() {
+		return te;
 	}
 
 	@Override

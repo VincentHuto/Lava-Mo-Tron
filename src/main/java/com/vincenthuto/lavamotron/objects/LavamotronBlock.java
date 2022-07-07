@@ -12,6 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Containers;
@@ -41,6 +42,8 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
+import net.minecraftforge.network.NetworkHooks;
 
 public class LavamotronBlock extends BaseEntityBlock {
 	public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
@@ -54,19 +57,33 @@ public class LavamotronBlock extends BaseEntityBlock {
 
 	public InteractionResult use(BlockState p_48706_, Level p_48707_, BlockPos p_48708_, Player p_48709_,
 			InteractionHand p_48710_, BlockHitResult p_48711_) {
-		if (p_48707_.isClientSide) {
+		ItemStack stack = p_48709_.getItemInHand(p_48710_);
+		if (stack.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY).isPresent()) {
+			if (p_48707_.getBlockEntity(p_48708_) instanceof LavamotronBlockEntity tank) {
+				ItemStack result = tank.handleContainerInteraction(stack, p_48709_);
+				if (!result.isEmpty()) {
+					if (!p_48707_.isClientSide()) {
+						p_48709_.setItemInHand(p_48710_, result);
+						p_48709_.getInventory().setChanged();
+
+					}
+					return InteractionResult.SUCCESS;
+				} else {
+					return InteractionResult.FAIL;
+				}
+			}
+		}
+
+		else if (p_48707_.isClientSide) {
 			return InteractionResult.SUCCESS;
 		} else {
-			this.openContainer(p_48707_, p_48708_, p_48709_);
+			BlockEntity tile = p_48707_.getBlockEntity(p_48708_);
+
+			NetworkHooks.openGui((ServerPlayer) p_48709_, (LavamotronBlockEntity) tile, p_48708_);
 			return InteractionResult.CONSUME;
 		}
-	}
+		return super.use(p_48706_, p_48707_, p_48708_, p_48709_, p_48710_, p_48711_);
 
-	protected void openContainer(Level level, BlockPos pos, Player player) {
-		BlockEntity blockEntity = level.getBlockEntity(pos);
-		if (blockEntity instanceof LavamotronBlockEntity furnace) {
-			player.openMenu(furnace);
-		}
 	}
 
 	public BlockState getStateForPlacement(BlockPlaceContext p_48689_) {
