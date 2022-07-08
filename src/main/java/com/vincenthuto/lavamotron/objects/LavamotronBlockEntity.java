@@ -103,8 +103,6 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 
 	@SuppressWarnings("unchecked")
 	public static void serverTick(Level level, BlockPos pos, BlockState state, LavamotronBlockEntity te) {
-		level.sendBlockUpdated(pos, state, state, 2);
-
 		boolean flag = te.isLit();
 		boolean flag1 = false;
 		if (te.isLit()) {
@@ -163,8 +161,10 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 
 		if (flag1) {
 			setChanged(level, pos, state);
+
 		}
-		level.sendBlockUpdated(pos, state, state, 2);
+		te.sendUpdates();
+
 	}
 
 	@SuppressWarnings("unchecked")
@@ -205,6 +205,7 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 				}
 			}
 		} else {
+
 			return false;
 		}
 	}
@@ -265,7 +266,7 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 
 	protected int getBurnDuration(ItemStack p_58343_) {
 		if (p_58343_.isEmpty()) {
-			return 0;
+			return litDuration;
 		} else {
 			p_58343_.getItem();
 			return net.minecraftforge.common.ForgeHooks.getBurnTime(p_58343_, this.recipeType);
