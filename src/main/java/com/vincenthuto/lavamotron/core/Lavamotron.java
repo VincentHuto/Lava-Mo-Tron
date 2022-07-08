@@ -4,6 +4,7 @@ import java.util.function.ToIntFunction;
 
 import com.vincenthuto.lavamotron.menu.LavamotronMenu;
 import com.vincenthuto.lavamotron.menu.LavamotronScreen;
+import com.vincenthuto.lavamotron.network.PacketHandler;
 import com.vincenthuto.lavamotron.objects.LavamotronBlock;
 import com.vincenthuto.lavamotron.objects.LavamotronBlockEntity;
 import com.vincenthuto.lavamotron.objects.LavamotronItemBlock;
@@ -30,6 +31,7 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -89,6 +91,7 @@ public class Lavamotron {
 	public Lavamotron() {
 		final IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 		MinecraftForge.EVENT_BUS.register(this);
+		modEventBus.addListener(this::commonSetup);
 		modEventBus.addListener(this::clientSetup);
 		ITEMS.register(modEventBus);
 		BLOCKS.register(modEventBus);
@@ -98,13 +101,16 @@ public class Lavamotron {
 		TILES.register(modEventBus);
 
 	}
-	
+
+	private void commonSetup(final FMLCommonSetupEvent event) {
+		PacketHandler.registerChannels();
+	}
+
 	private void clientSetup(final FMLClientSetupEvent event) {
 		event.enqueueWork(() -> {
 			MenuScreens.register(lavamotron_menu.get(), LavamotronScreen::new);
 		});
 	}
-
 
 	private static ToIntFunction<BlockState> litBlockEmission(int p_50760_) {
 		return (p_50763_) -> {

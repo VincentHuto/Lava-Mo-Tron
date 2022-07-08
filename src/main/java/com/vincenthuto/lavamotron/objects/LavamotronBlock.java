@@ -1,5 +1,7 @@
 package com.vincenthuto.lavamotron.objects;
 
+import java.util.Random;
+
 import javax.annotation.Nullable;
 
 import com.vincenthuto.hutoslib.client.particle.factory.EmberParticleFactory;
@@ -10,9 +12,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -40,6 +42,8 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
+import net.minecraftforge.network.NetworkHooks;
 
 public class LavamotronBlock extends BaseEntityBlock {
 	public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
@@ -53,19 +57,33 @@ public class LavamotronBlock extends BaseEntityBlock {
 
 	public InteractionResult use(BlockState p_48706_, Level p_48707_, BlockPos p_48708_, Player p_48709_,
 			InteractionHand p_48710_, BlockHitResult p_48711_) {
-		if (p_48707_.isClientSide) {
+		ItemStack stack = p_48709_.getItemInHand(p_48710_);
+		if (stack.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY).isPresent()) {
+			if (p_48707_.getBlockEntity(p_48708_) instanceof LavamotronBlockEntity tank) {
+				ItemStack result = tank.handleContainerInteraction(stack, p_48709_);
+				if (!result.isEmpty()) {
+					if (!p_48707_.isClientSide()) {
+						p_48709_.setItemInHand(p_48710_, result);
+						p_48709_.getInventory().setChanged();
+
+					}
+					return InteractionResult.SUCCESS;
+				} else {
+					return InteractionResult.FAIL;
+				}
+			}
+		}
+
+		else if (p_48707_.isClientSide) {
 			return InteractionResult.SUCCESS;
 		} else {
-			this.openContainer(p_48707_, p_48708_, p_48709_);
+			BlockEntity tile = p_48707_.getBlockEntity(p_48708_);
+
+			NetworkHooks.openGui((ServerPlayer) p_48709_, (LavamotronBlockEntity) tile, p_48708_);
 			return InteractionResult.CONSUME;
 		}
-	}
+		return super.use(p_48706_, p_48707_, p_48708_, p_48709_, p_48710_, p_48711_);
 
-	protected void openContainer(Level level, BlockPos pos, Player player) {
-		BlockEntity blockEntity = level.getBlockEntity(pos);
-		if (blockEntity instanceof LavamotronBlockEntity furnace) {
-			player.openMenu(furnace);
-		}
 	}
 
 	public BlockState getStateForPlacement(BlockPlaceContext p_48689_) {
@@ -150,26 +168,25 @@ public class LavamotronBlock extends BaseEntityBlock {
 		return super.getLightEmission(state, world, pos);
 	}
 
-	@Override
-	public void animateTick(BlockState p_220827_, Level p_220828_, BlockPos p_220829_, RandomSource p_220830_) {
-		if (p_220827_.getValue(LIT)) {
-			double d0 = (double) p_220829_.getX() + 0.5D;
-			double d1 = (double) p_220829_.getY();
-			double d2 = (double) p_220829_.getZ() + 0.5D;
-			if (p_220830_.nextDouble() < 0.1D) {
-				p_220828_.playLocalSound(d0, d1, d2, SoundEvents.FURNACE_FIRE_CRACKLE, SoundSource.BLOCKS, 1.0F, 1.0F,
+	public void animateTick(BlockState p_53635_, Level p_53636_, BlockPos p_53637_, Random p_53638_) {
+		if (p_53635_.getValue(LIT)) {
+			double d0 = (double) p_53637_.getX() + 0.5D;
+			double d1 = (double) p_53637_.getY();
+			double d2 = (double) p_53637_.getZ() + 0.5D;
+			if (p_53638_.nextDouble() < 0.1D) {
+				p_53636_.playLocalSound(d0, d1, d2, SoundEvents.FURNACE_FIRE_CRACKLE, SoundSource.BLOCKS, 1.0F, 1.0F,
 						false);
 			}
-			Direction direction = p_220827_.getValue(FACING);
+			Direction direction = p_53635_.getValue(FACING);
 			Direction.Axis direction$axis = direction.getAxis();
-			double d4 = p_220830_.nextDouble() * 0.6D - 0.3D;
+			double d4 = p_53638_.nextDouble() * 0.6D - 0.3D;
 			double d5 = direction$axis == Direction.Axis.X ? (double) direction.getStepX() * 0.52D : d4;
-			double d6 = p_220830_.nextDouble() * 6.0D / 16.0D;
+			double d6 = p_53638_.nextDouble() * 6.0D / 16.0D;
 			double d7 = direction$axis == Direction.Axis.Z ? (double) direction.getStepZ() * 0.52D : d4;
-			p_220828_.addParticle(ParticleTypes.SMOKE, d0 + d5, d1 + d6, d2 + d7, 0.0D, 0.0D, 0.0D);
-			p_220828_.addParticle(EmberParticleFactory.createData(ParticleColor.ORANGE, 1, 0.15f, 125), d0 + d5,
-					d1 + d6, d2 + d7, 0.0D, 0.0D, 0.0D);
-			p_220828_.addParticle(EmberParticleFactory.createData(ParticleColor.RED, 2, 0.15f, 150), d0 + d5, d1 + d6,
+			p_53636_.addParticle(ParticleTypes.SMOKE, d0 + d5, d1 + d6, d2 + d7, 0.0D, 0.0D, 0.0D);
+			p_53636_.addParticle(EmberParticleFactory.createData(ParticleColor.ORANGE, 1, 0.15f, 125), d0 + d5, d1 + d6,
+					d2 + d7, 0.0D, 0.0D, 0.0D);
+			p_53636_.addParticle(EmberParticleFactory.createData(ParticleColor.RED, 2, 0.15f, 150), d0 + d5, d1 + d6,
 					d2 + d7, 0.0D, 0.0D, 0.0D);
 		}
 	}

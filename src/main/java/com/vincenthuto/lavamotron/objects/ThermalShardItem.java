@@ -28,11 +28,11 @@ public class ThermalShardItem extends Item {
 	@Override
 	public void appendHoverText(ItemStack stack, Level worldIn, List<Component> tooltip, TooltipFlag flagIn) {
 		super.appendHoverText(stack, worldIn, tooltip, flagIn);
-		tooltip.add(Component.translatable("Right click to place a block of lava in the world.")
-				.withStyle(ChatFormatting.GOLD));
-
+		tooltip.add(Component.translatable("Right click to place a").withStyle(ChatFormatting.GOLD));
+		tooltip.add(Component.translatable("block of lava in the world.").withStyle(ChatFormatting.GOLD));
 	}
 
+	@SuppressWarnings("resource")
 	@Override
 	public InteractionResult useOn(UseOnContext ctx) {
 		Level world = ctx.getLevel();

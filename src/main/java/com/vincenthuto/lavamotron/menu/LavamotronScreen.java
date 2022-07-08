@@ -2,7 +2,12 @@ package com.vincenthuto.lavamotron.menu;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.vincenthuto.hutoslib.client.screen.GuiButtonTextured;
+import com.vincenthuto.hutoslib.client.screen.HLGuiUtils;
 import com.vincenthuto.lavamotron.core.Lavamotron;
+import com.vincenthuto.lavamotron.network.PacketHandler;
+import com.vincenthuto.lavamotron.network.PacketToggleMachineMode;
+import com.vincenthuto.lavamotron.objects.LavamotronBlockEntity;
 
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.GameRenderer;
@@ -11,27 +16,54 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.capability.templates.FluidTank;
 
 public class LavamotronScreen extends AbstractContainerScreen<LavamotronMenu> {
 	private static final ResourceLocation TEXTURE = new ResourceLocation(Lavamotron.MOD_ID,
 			"textures/container/lavamotron_gui.png");
+	private static final int TOGGLEOFFID = 100;
+	private static final int TOGGLEONID = 101;
+
 	private final ResourceLocation texture;
+	final LavamotronBlockEntity te;
+	GuiButtonTextured toggleOffButton;
+	GuiButtonTextured toggleOnButton;
 
 	public LavamotronScreen(LavamotronMenu p_97825_, Inventory p_97827_, Component p_97828_) {
 		super(p_97825_, p_97827_, p_97828_);
 		this.texture = TEXTURE;
+		this.te = p_97825_.getTe();
+
 	}
 
 	public void init() {
 		super.init();
-		this.titleLabelX = (this.imageWidth - this.font.width(this.title)) / 2;
-	}
+		leftPos = width / 2 - imageWidth / 2;
+		topPos = height / 2 - imageHeight / 2;
+		renderables.clear();
+		toggleOffButton = new GuiButtonTextured(TEXTURE, TOGGLEOFFID, leftPos + imageWidth - (imageWidth - 112),
+				topPos + imageHeight - (104), 24, 8, 176, 31, (press) -> {
+					if (press instanceof GuiButtonTextured button) {
+						PacketHandler.MAINCHANNEL.sendToServer(new PacketToggleMachineMode());
+					}
+				});
+		if (!te.liquidMode) {
+			toggleOffButton.setState(true);
+		}
+		this.addRenderableWidget(toggleOffButton);
 
-	public void render(PoseStack p_97858_, int p_97859_, int p_97860_, float p_97861_) {
-		this.renderBackground(p_97858_);
-		this.renderBg(p_97858_, p_97861_, p_97859_, p_97860_);
-		super.render(p_97858_, p_97859_, p_97860_, p_97861_);
-		this.renderTooltip(p_97858_, p_97859_, p_97860_);
+		toggleOnButton = new GuiButtonTextured(TEXTURE, TOGGLEONID, leftPos + imageWidth - (imageWidth - 112),
+				topPos + imageHeight - (104), 24, 8, 200, 31, (press) -> {
+					if (press instanceof GuiButtonTextured button) {
+						PacketHandler.MAINCHANNEL.sendToServer(new PacketToggleMachineMode());
+					}
+				});
+		if (te.liquidMode) {
+			toggleOnButton.setState(true);
+		}
+		this.addRenderableWidget(toggleOnButton);
+
 	}
 
 	protected void renderBg(PoseStack p_97853_, float p_97854_, int p_97855_, int p_97856_) {
@@ -45,16 +77,65 @@ public class LavamotronScreen extends AbstractContainerScreen<LavamotronMenu> {
 			int k = this.menu.getLitProgress();
 			this.blit(p_97853_, i + 56, j + 36 + 12 - k, 176, 12 - k, 14, k + 1);
 		}
+		toggleOffButton.visible = false;
+		toggleOnButton.visible = false;
 		int l = this.menu.getBurnProgress();
 		this.blit(p_97853_, i + 79, j + 34, 176, 14, l + 1, 16);
+		if (te.liquidMode) {
+			toggleOffButton.visible = false;
+			toggleOnButton.visible = true;
+
+		} else {
+			toggleOnButton.visible = false;
+			toggleOffButton.visible = true;
+		}
+		toggleOnButton.render(p_97853_, 0, 00, 10);
+		toggleOffButton.render(p_97853_, 0, 00, 10);
+
 	}
 
 	protected void slotClicked(Slot p_97848_, int p_97849_, int p_97850_, ClickType p_97851_) {
 		super.slotClicked(p_97848_, p_97849_, p_97850_, p_97851_);
 	}
 
-	public void removed() {
-		super.removed();
+	public static int density(FluidStack stack) {
+
+		return !stack.isEmpty() && stack.getFluid() != null ? RenderHelper.density(stack) : 0;
+	}
+
+	public void render(PoseStack pose, int p_97859_, int p_97860_, float p_97861_) {
+		this.renderBackground(pose);
+		this.renderBg(pose, p_97861_, p_97859_, p_97860_);
+		int centerX = (width / 2) - imageWidth / 2;
+		int centerY = (height / 2) - imageHeight / 2;
+		FluidStack fluid = te.tank.getFluid();
+		super.render(pose, p_97859_, p_97860_, p_97861_);
+		if (fluid != null) {
+			int resourceHeight = height - 2;
+			int amount = getScaled(resourceHeight, te.tank);
+			RenderHelper.drawFluid(centerX + 145, -centerY + (resourceHeight - amount) - 110, te.tank.getFluid(), 20,
+					amount);
+		}
+		HLGuiUtils.drawMaxWidthString(font, Component.translatable("" + te.tank.getFluidAmount() + "mb"), centerX + 100,
+				centerY + 71, 165, 0xffffff, true);
+//		HLGuiUtils.drawMaxWidthString(font, Component.translatable("Liquid: " + te.liquidMode), centerX + 80, centerY + 10,
+//				165, 0xffffff, true);
+		this.renderTooltip(pose, p_97859_, p_97860_);
+		if (this.toggleOffButton.isHoveredOrFocused() && toggleOffButton.visible) {
+			renderTooltip(pose, Component.translatable("Toggle Liquid Mode On"), this.toggleOffButton.x,
+					this.toggleOffButton.y);
+		}
+		if (this.toggleOnButton.isHoveredOrFocused() && toggleOnButton.visible) {
+			renderTooltip(pose, Component.translatable("Toggle Liquid Mode Off"), this.toggleOnButton.x,
+					this.toggleOnButton.y);
+		}
+
+	}
+
+	protected int getScaled(int scale, FluidTank tank) {
+		double fraction = (double) tank.getFluidAmount() / 6 * scale / tank.getCapacity();
+		int amount = MathHelper.clamp(MathHelper.round(fraction), 0, scale);
+		return fraction > 0 ? Math.max(1, amount) : amount;
 	}
 
 }
