@@ -1,7 +1,7 @@
 {
   "type": "lavamotron:lavamotron",
   "ingredient": {
-    "item": "minecraft:cobblestone"
+      "tag": "forge:stone"
   },
   "result": "lavamotron:thermal_shard",
   "count" : 1,
