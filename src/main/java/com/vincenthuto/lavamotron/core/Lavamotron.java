@@ -48,7 +48,7 @@ public class Lavamotron {
 	public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MOD_ID);
 
 	public static final DeferredRegister<BlockEntityType<?>> TILES = DeferredRegister
-			.create(ForgeRegistries.BLOCK_ENTITIES, MOD_ID);
+			.create(ForgeRegistries.BLOCK_ENTITY_TYPES, MOD_ID);
 
 	public static final DeferredRegister<RecipeType<?>> RECIPE_TYPES = DeferredRegister
 			.create(ForgeRegistries.RECIPE_TYPES, MOD_ID);
@@ -56,7 +56,7 @@ public class Lavamotron {
 	public static final DeferredRegister<RecipeSerializer<?>> SERIALIZERS = DeferredRegister
 			.create(ForgeRegistries.RECIPE_SERIALIZERS, MOD_ID);
 
-	public static final DeferredRegister<MenuType<?>> CONTAINERS = DeferredRegister.create(ForgeRegistries.CONTAINERS,
+	public static final DeferredRegister<MenuType<?>> CONTAINERS = DeferredRegister.create(ForgeRegistries.MENU_TYPES,
 			MOD_ID);
 
 	// Objects

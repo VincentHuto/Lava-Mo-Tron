@@ -79,7 +79,7 @@ public class LavamotronBlock extends BaseEntityBlock {
 		} else {
 			BlockEntity tile = p_48707_.getBlockEntity(p_48708_);
 
-			NetworkHooks.openGui((ServerPlayer) p_48709_, (LavamotronBlockEntity) tile, p_48708_);
+			NetworkHooks.openScreen((ServerPlayer) p_48709_, (LavamotronBlockEntity) tile, p_48708_);
 			return InteractionResult.CONSUME;
 		}
 		return super.use(p_48706_, p_48707_, p_48708_, p_48709_, p_48710_, p_48711_);

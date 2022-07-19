@@ -113,7 +113,7 @@ public class LavamotronScreen extends AbstractContainerScreen<LavamotronMenu> {
 		if (fluid != null) {
 			int resourceHeight = height - 2;
 			int amount = getScaled(resourceHeight, te.tank);
-			RenderHelper.drawFluid(centerX + 145, -centerY + (resourceHeight - amount) - 110, te.tank.getFluid(), 20,
+			RenderHelper.drawFluid(centerX + 145, -centerY + (resourceHeight - amount) - 109, te.tank.getFluid(), 20,
 					amount);
 		}
 		HLGuiUtils.drawMaxWidthString(font, Component.translatable("" + te.tank.getFluidAmount() + "mb"), centerX + 100,

@@ -118,13 +118,13 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 				te.litDuration = te.litTime;
 				if (te.isLit()) {
 					flag1 = true;
-					if (itemstack.hasContainerItem())
-						te.items.set(1, itemstack.getContainerItem());
+					if (itemstack.hasCraftingRemainingItem())
+						te.items.set(1, itemstack.getCraftingRemainingItem());
 					else if (!itemstack.isEmpty()) {
 						itemstack.getItem();
 						itemstack.shrink(1);
 						if (itemstack.isEmpty()) {
-							te.items.set(1, itemstack.getContainerItem());
+							te.items.set(1, itemstack.getCraftingRemainingItem());
 						}
 					}
 				}

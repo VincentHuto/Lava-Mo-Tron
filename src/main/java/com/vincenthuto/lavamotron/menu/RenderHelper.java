@@ -15,7 +15,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraftforge.client.RenderProperties;
+import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.minecraftforge.fluids.FluidStack;
 
 public class RenderHelper {
@@ -29,13 +29,13 @@ public class RenderHelper {
 		setPosTexShader();
 		setBlockTextureSheet();
 		setSahderColorFromInt(color);
-		drawTiledTexture(x, y, getTexture(RenderProperties.get(fluid.getFluid()).getStillTexture(fluid)), width,
+		drawTiledTexture(x, y, getTexture(IClientFluidTypeExtensions.of(fluid.getFluid()).getStillTexture(fluid)), width,
 				height);
 	}
 
 	public static int color(FluidStack stack) {
 
-		return !stack.isEmpty() && stack.getFluid() != null ? RenderProperties.get(stack.getFluid()).getColorTint(stack)
+		return !stack.isEmpty() && stack.getFluid() != null ? IClientFluidTypeExtensions.of(stack.getFluid()).getTintColor(stack)
 				: 0;
 	}
 
@@ -108,12 +108,12 @@ public class RenderHelper {
 
 	public static TextureAtlasSprite getFluidTexture(Fluid fluid) {
 
-		return getTexture(RenderProperties.get(fluid).getStillTexture());
+		return getTexture(IClientFluidTypeExtensions.of(fluid).getStillTexture());
 	}
 
 	public static TextureAtlasSprite getFluidTexture(FluidStack fluid) {
 
-		return getTexture(RenderProperties.get(fluid.getFluid()).getStillTexture(fluid));
+		return getTexture(IClientFluidTypeExtensions.of(fluid.getFluid()).getStillTexture(fluid));
 	}
 
 	public static final ResourceLocation MC_BLOCK_SHEET = new ResourceLocation("textures/atlas/blocks.png");
