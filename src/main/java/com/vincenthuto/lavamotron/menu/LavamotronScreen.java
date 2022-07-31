@@ -32,11 +32,10 @@ public class LavamotronScreen extends AbstractContainerScreen<LavamotronMenu> {
 	GuiButtonTextured toggleOffButton;
 	GuiButtonTextured toggleOnButton;
 
-	public LavamotronScreen(LavamotronMenu p_97825_, Inventory p_97827_, Component p_97828_) {
-		super(p_97825_, p_97827_, p_97828_);
+	public LavamotronScreen(LavamotronMenu menu, Inventory inventory, Component component) {
+		super(menu, inventory, component);
 		this.texture = TEXTURE;
-		this.te = p_97825_.getTe();
-
+		this.te = menu.getTe();
 	}
 
 	public void init() {
@@ -54,7 +53,6 @@ public class LavamotronScreen extends AbstractContainerScreen<LavamotronMenu> {
 			toggleOffButton.setState(true);
 		}
 		this.addRenderableWidget(toggleOffButton);
-
 		toggleOnButton = new GuiButtonTextured(TEXTURE, TOGGLEONID, leftPos + imageWidth - (imageWidth - 112),
 				topPos + imageHeight - (104), 24, 8, 200, 31, (press) -> {
 					if (press instanceof GuiButtonTextured button) {
@@ -68,21 +66,21 @@ public class LavamotronScreen extends AbstractContainerScreen<LavamotronMenu> {
 
 	}
 
-	protected void renderBg(PoseStack p_97853_, float p_97854_, int p_97855_, int p_97856_) {
+	protected void renderBg(PoseStack pose, float partialTick, int mX, int mY) {
 		RenderSystem.setShader(GameRenderer::getPositionTexShader);
 		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 		RenderSystem.setShaderTexture(0, this.texture);
 		int i = this.leftPos;
 		int j = this.topPos;
-		this.blit(p_97853_, i, j, 0, 0, this.imageWidth, this.imageHeight);
+		this.blit(pose, i, j, 0, 0, this.imageWidth, this.imageHeight);
 		if (this.menu.isLit()) {
 			int k = this.menu.getLitProgress();
-			this.blit(p_97853_, i + 56, j + 36 + 12 - k, 176, 12 - k, 14, k + 1);
+			this.blit(pose, i + 56, j + 36 + 12 - k, 176, 12 - k, 14, k + 1);
 		}
 		toggleOffButton.visible = false;
 		toggleOnButton.visible = false;
 		int l = this.menu.getBurnProgress();
-		this.blit(p_97853_, i + 79, j + 34, 176, 14, l + 1, 16);
+		this.blit(pose, i + 79, j + 34, 176, 14, l + 1, 16);
 		if (te.liquidMode) {
 			toggleOffButton.visible = false;
 			toggleOnButton.visible = true;
@@ -91,13 +89,13 @@ public class LavamotronScreen extends AbstractContainerScreen<LavamotronMenu> {
 			toggleOnButton.visible = false;
 			toggleOffButton.visible = true;
 		}
-		toggleOnButton.render(p_97853_, 0, 00, 10);
-		toggleOffButton.render(p_97853_, 0, 00, 10);
+		toggleOnButton.render(pose, 0, 00, 10);
+		toggleOffButton.render(pose, 0, 00, 10);
 
 	}
 
-	protected void slotClicked(Slot p_97848_, int p_97849_, int p_97850_, ClickType p_97851_) {
-		super.slotClicked(p_97848_, p_97849_, p_97850_, p_97851_);
+	protected void slotClicked(Slot slot, int id, int mouseButton, ClickType clickType) {
+		super.slotClicked(slot, id, mouseButton, clickType);
 	}
 
 	public static int density(FluidStack stack) {
@@ -105,27 +103,24 @@ public class LavamotronScreen extends AbstractContainerScreen<LavamotronMenu> {
 		return !stack.isEmpty() && stack.getFluid() != null ? stack.getFluid().getAttributes().getDensity() : 0;
 	}
 
-	public void render(PoseStack pose, int p_97859_, int p_97860_, float p_97861_) {
+	public void render(PoseStack pose, int mX, int mY, float partialTick) {
 		this.renderBackground(pose);
-		this.renderBg(pose, p_97861_, p_97859_, p_97860_);
-		int centerX = (width / 2) - imageWidth / 2;
-		int centerY = (height / 2) - imageHeight / 2;
+		this.renderBg(pose, partialTick, mX, mY);
+		leftPos = width / 2 - imageWidth / 2;
+		topPos = height / 2 - imageHeight / 2;
 		FluidStack fluid = te.tank.getFluid();
-		super.render(pose, p_97859_, p_97860_, p_97861_);
+		super.render(pose, mX, mY, partialTick);
 		if (fluid != null) {
 			if (fluid.getFluid().getAttributes().getStillTexture(fluid) != null) {
-				int resourceHeight = height - 2;
-				int amount = getScaled(resourceHeight, te.tank);
-				RenderHelper.drawFluid(centerX + 145, -centerY + (resourceHeight - amount) - 110, te.tank.getFluid(),
-						20, amount);
+				int amount = getScaled(height, te.tank);
+				RenderHelper.drawFluid(leftPos + 145, -topPos + (height - amount) - 110,
+						te.tank.getFluid(), 20, amount);
 			}
 		}
-		HLGuiUtils.drawMaxWidthString(font, new TextComponent("" + te.tank.getFluidAmount() + "mb"), centerX + 100,
-				centerY + 71, 165, 0xffffff, true);
-//		HLGuiUtils.drawMaxWidthString(font, new TextComponent("Liquid: " + te.liquidMode), centerX + 80, centerY + 10,
-//				165, 0xffffff, true);
-		this.renderTooltip(pose, p_97859_, p_97860_);
-		if (this.toggleOffButton.isHoveredOrFocused()&& toggleOffButton.visible) {
+		HLGuiUtils.drawMaxWidthString(font, new TextComponent("" + te.tank.getFluidAmount() + "mb"), leftPos + 100,
+				topPos + 71, 165, 0xffffff, true);
+		this.renderTooltip(pose, mX, mY);
+		if (this.toggleOffButton.isHoveredOrFocused() && toggleOffButton.visible) {
 			renderTooltip(pose, new TranslatableComponent("Toggle Liquid Mode On"), this.toggleOffButton.x,
 					this.toggleOffButton.y);
 		}

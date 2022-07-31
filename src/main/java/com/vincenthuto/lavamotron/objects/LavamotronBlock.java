@@ -102,32 +102,31 @@ public class LavamotronBlock extends BaseEntityBlock {
 	}
 
 	@SuppressWarnings("deprecation")
-	public void onRemove(BlockState p_48713_, Level p_48714_, BlockPos p_48715_, BlockState p_48716_,
-			boolean p_48717_) {
-		if (!p_48713_.is(p_48716_.getBlock())) {
-			BlockEntity blockentity = p_48714_.getBlockEntity(p_48715_);
+	public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
+		if (!state.is(newState.getBlock())) {
+			BlockEntity blockentity = level.getBlockEntity(pos);
 			if (blockentity instanceof LavamotronBlockEntity) {
-				if (p_48714_ instanceof ServerLevel) {
-					Containers.dropContents(p_48714_, p_48715_, (LavamotronBlockEntity) blockentity);
-					((LavamotronBlockEntity) blockentity).getRecipesToAwardAndPopExperience((ServerLevel) p_48714_,
-							Vec3.atCenterOf(p_48715_));
+				if (level instanceof ServerLevel) {
+					Containers.dropContents(level, pos, (LavamotronBlockEntity) blockentity);
+					((LavamotronBlockEntity) blockentity).getRecipesToAwardAndPopExperience((ServerLevel) level,
+							Vec3.atCenterOf(pos));
 				}
 
-				p_48714_.updateNeighbourForOutputSignal(p_48715_, this);
+				level.updateNeighbourForOutputSignal(pos, this);
 			}
-			super.onRemove(p_48713_, p_48714_, p_48715_, p_48716_, p_48717_);
+			super.onRemove(state, level, pos, newState, isMoving);
 		}
 	}
 
-	public boolean hasAnalogOutputSignal(BlockState p_48700_) {
+	public boolean hasAnalogOutputSignal(BlockState state) {
 		return true;
 	}
 
-	public int getAnalogOutputSignal(BlockState p_48702_, Level p_48703_, BlockPos p_48704_) {
-		return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(p_48703_.getBlockEntity(p_48704_));
+	public int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
+		return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(level.getBlockEntity(pos));
 	}
 
-	public RenderShape getRenderShape(BlockState p_48727_) {
+	public RenderShape getRenderShape(BlockState state) {
 		return RenderShape.MODEL;
 	}
 
