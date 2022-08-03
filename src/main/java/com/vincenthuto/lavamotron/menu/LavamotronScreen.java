@@ -103,6 +103,18 @@ public class LavamotronScreen extends AbstractContainerScreen<LavamotronMenu> {
 		return !stack.isEmpty() && stack.getFluid() != null ? stack.getFluid().getAttributes().getDensity() : 0;
 	}
 
+	public static double mapOneRangeToAnother(double sourceNumber, double fromA, double fromB, double toA, double toB,
+			int decimalPrecision) {
+		double deltaA = fromB - fromA;
+		double deltaB = toB - toA;
+		double scale = deltaB / deltaA;
+		double negA = -1 * fromA;
+		double offset = (negA * scale) + toA;
+		double finalNumber = (sourceNumber * scale) + offset;
+		int calcScale = (int) Math.pow(10, decimalPrecision);
+		return (double) Math.round(finalNumber * calcScale) / calcScale;
+	}
+
 	public void render(PoseStack pose, int mX, int mY, float partialTick) {
 		this.renderBackground(pose);
 		this.renderBg(pose, partialTick, mX, mY);
@@ -110,11 +122,14 @@ public class LavamotronScreen extends AbstractContainerScreen<LavamotronMenu> {
 		topPos = height / 2 - imageHeight / 2;
 		FluidStack fluid = te.tank.getFluid();
 		super.render(pose, mX, mY, partialTick);
+
+		
+		
 		if (fluid != null) {
 			if (fluid.getFluid().getAttributes().getStillTexture(fluid) != null) {
-				int amount = getScaled(height, te.tank);
-				RenderHelper.drawFluid(leftPos + 145, -topPos + (height - amount) - 110,
-						te.tank.getFluid(), 20, amount);
+				int lerped = (int) mapOneRangeToAnother(te.tank.getFluidAmount(), 0, 10000, 0, 45, 2);
+				RenderHelper.drawFluid(leftPos + 145, -topPos + (height - lerped) - 110, te.tank.getFluid(), 20,
+						lerped);
 			}
 		}
 		HLGuiUtils.drawMaxWidthString(font, new TextComponent("" + te.tank.getFluidAmount() + "mb"), leftPos + 100,

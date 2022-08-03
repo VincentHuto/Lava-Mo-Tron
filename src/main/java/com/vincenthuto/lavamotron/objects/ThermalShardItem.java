@@ -30,7 +30,9 @@ public class ThermalShardItem extends Item {
 	public void appendHoverText(ItemStack stack, Level worldIn, List<Component> tooltip, TooltipFlag flagIn) {
 		super.appendHoverText(stack, worldIn, tooltip, flagIn);
 		tooltip.add(
-				new TextComponent("Right click to place a\nblock of lava in the world.").withStyle(ChatFormatting.GOLD));
+				new TextComponent("Right click to place a ").withStyle(ChatFormatting.GOLD));
+		tooltip.add(
+				new TextComponent("block of lava in the world.").withStyle(ChatFormatting.GOLD));
 
 	}
 
