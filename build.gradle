@@ -15,7 +15,7 @@ apply plugin: 'org.parchmentmc.librarian.forgegradle'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
-version = '1.6'
+version = '1.7'
 group = 'com.vincenthuto.lavamotron' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'lavamotron'
 
