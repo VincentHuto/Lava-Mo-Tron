@@ -12,7 +12,9 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
 minecraft {
  
-    mappings channel: 'parchment', version: '1.18.2-2022.06.05-1.19'
+   
+mappings channel: 'parchment', version: "2022.10.16-1.19.2"
+
     accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg') // Currently, this location cannot be changed from the default.
     runs {
         client {
@@ -93,12 +95,11 @@ repositories {
 dependencies {
    
 
-    minecraft 'net.minecraftforge:forge:1.19-41.0.100'
-    implementation fg.deobf("curse.maven:hutoslib-478643:${hutoslib_version}")
-  compileOnly fg.deobf("mezz.jei:jei-${mc_version}-common-api:${jei_version}")
-  compileOnly fg.deobf("mezz.jei:jei-${mc_version}-forge-api:${jei_version}")
-  runtimeOnly fg.deobf("mezz.jei:jei-${mc_version}-common:${jei_version}")
-  runtimeOnly fg.deobf("mezz.jei:jei-${mc_version}-forge:${jei_version}")
+  minecraft 'net.minecraftforge:forge:1.19.2-43.1.47'
+   //  implementation fg.deobf("curse.maven:hutoslib-478643:${hutoslib_version}")
+ 	implementation fg.deobf("com.vincenthuto:hutoslib:4.2.1")
+   compileOnly fg.deobf("mezz.jei:jei-${mc_version}:${jei_version}:api") // Adds JEI API as a compile dependency
+   runtimeOnly fg.deobf("mezz.jei:jei-${mc_version}:${jei_version}") // Adds the full JEI mod as a runtime dependency
 }
 
 jar {

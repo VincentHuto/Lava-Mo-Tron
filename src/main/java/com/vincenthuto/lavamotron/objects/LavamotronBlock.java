@@ -15,6 +15,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -168,7 +169,7 @@ public class LavamotronBlock extends BaseEntityBlock {
 		return super.getLightEmission(state, world, pos);
 	}
 
-	public void animateTick(BlockState p_53635_, Level p_53636_, BlockPos p_53637_, Random p_53638_) {
+	public void animateTick(BlockState p_53635_, Level p_53636_, BlockPos p_53637_, RandomSource p_53638_) {
 		if (p_53635_.getValue(LIT)) {
 			double d0 = (double) p_53637_.getX() + 0.5D;
 			double d1 = (double) p_53637_.getY();
