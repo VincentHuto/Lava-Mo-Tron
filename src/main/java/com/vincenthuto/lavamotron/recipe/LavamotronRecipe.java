@@ -1,6 +1,5 @@
 package com.vincenthuto.lavamotron.recipe;
 
-import java.util.Collection;
 import java.util.List;
 
 import com.vincenthuto.lavamotron.core.Lavamotron;
@@ -14,23 +13,13 @@ import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
 
 public class LavamotronRecipe extends AbstractCookingRecipe {
+	public static List<LavamotronRecipe> getAllRecipes(Level world) {
+		return world.getRecipeManager().getAllRecipesFor(Lavamotron.lavamotron_recipe_type.get());
+	}
+
 	public LavamotronRecipe(ResourceLocation resourceLocation, String group, Ingredient ingredient, ItemStack result,
 			float experience, int cookingTime) {
 		super(Lavamotron.lavamotron_recipe_type.get(), resourceLocation, group, ingredient, result, experience, cookingTime);
-	}
-
-	@Override
-	public ItemStack getToastSymbol() {
-		return new ItemStack(Lavamotron.lavamotron_block.get());
-	}
-
-	@Override
-	public RecipeSerializer<?> getSerializer() {
-		return Lavamotron.lavamotron_serializer.get();
-	}
-
-	public static List<LavamotronRecipe> getAllRecipes(Level world) {
-		return world.getRecipeManager().getAllRecipesFor(Lavamotron.lavamotron_recipe_type.get());
 	}
 
 	@Override
@@ -43,5 +32,15 @@ public class LavamotronRecipe extends AbstractCookingRecipe {
 	@Override
 	public ItemStack getResultItem() {
 		return super.getResultItem();
+	}
+
+	@Override
+	public RecipeSerializer<?> getSerializer() {
+		return Lavamotron.lavamotron_serializer.get();
+	}
+
+	@Override
+	public ItemStack getToastSymbol() {
+		return new ItemStack(Lavamotron.lavamotron_block.get());
 	}
 }

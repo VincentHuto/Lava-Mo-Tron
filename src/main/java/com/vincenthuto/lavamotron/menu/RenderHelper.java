@@ -19,19 +19,7 @@ import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.minecraftforge.fluids.FluidStack;
 
 public class RenderHelper {
-	public static void drawFluid(int x, int y, FluidStack fluid, int width, int height) {
-		if (fluid.isEmpty()) {
-			return;
-		}
-		RenderSystem.enableBlend();
-		RenderSystem.blendFunc(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA);
-		int color = color(fluid);
-		setPosTexShader();
-		setBlockTextureSheet();
-		setSahderColorFromInt(color);
-		drawTiledTexture(x, y, getTexture(IClientFluidTypeExtensions.of(fluid.getFluid()).getStillTexture(fluid)), width,
-				height);
-	}
+	public static final ResourceLocation MC_BLOCK_SHEET = new ResourceLocation("textures/atlas/blocks.png");
 
 	public static int color(FluidStack stack) {
 
@@ -44,22 +32,18 @@ public class RenderHelper {
 		return !stack.isEmpty() && stack.getFluid() != null ? stack.getFluid().getFluidType().getDensity(stack) : 0;
 	}
 
-	public static void drawTiledTexture(int x, int y, TextureAtlasSprite icon, int width, int height) {
-		int drawHeight;
-		int drawWidth;
-		for (int i = 0; i < width; i += 16) {
-			for (int j = 0; j < height; j += 16) {
-				drawWidth = Math.min(width - i, 16);
-				drawHeight = Math.min(height - j, 16);
-				drawScaledTexturedModalRectFromSprite(x + i, y + j, icon, drawWidth, drawHeight);
-			}
+	public static void drawFluid(int x, int y, FluidStack fluid, int width, int height) {
+		if (fluid.isEmpty()) {
+			return;
 		}
-		resetShaderColor();
-	}
-
-	public static Tesselator tesselator() {
-
-		return Tesselator.getInstance();
+		RenderSystem.enableBlend();
+		RenderSystem.blendFunc(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA);
+		int color = color(fluid);
+		setPosTexShader();
+		setBlockTextureSheet();
+		setSahderColorFromInt(color);
+		drawTiledTexture(x, y, getTexture(IClientFluidTypeExtensions.of(fluid.getFluid()).getStillTexture(fluid)), width,
+				height);
 	}
 
 	public static void drawScaledTexturedModalRectFromSprite(int x, int y, TextureAtlasSprite icon, int width,
@@ -86,24 +70,17 @@ public class RenderHelper {
 		tesselator().end();
 	}
 
-	public static void resetShaderColor() {
-
-		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-	}
-
-	public static TextureAtlas textureMap() {
-
-		return Minecraft.getInstance().getModelManager().getAtlas(InventoryMenu.BLOCK_ATLAS);
-	}
-
-	public static TextureAtlasSprite getTexture(String location) {
-
-		return textureMap().getSprite(new ResourceLocation(location));
-	}
-
-	public static TextureAtlasSprite getTexture(ResourceLocation location) {
-
-		return textureMap().getSprite(location);
+	public static void drawTiledTexture(int x, int y, TextureAtlasSprite icon, int width, int height) {
+		int drawHeight;
+		int drawWidth;
+		for (int i = 0; i < width; i += 16) {
+			for (int j = 0; j < height; j += 16) {
+				drawWidth = Math.min(width - i, 16);
+				drawHeight = Math.min(height - j, 16);
+				drawScaledTexturedModalRectFromSprite(x + i, y + j, icon, drawWidth, drawHeight);
+			}
+		}
+		resetShaderColor();
 	}
 
 	public static TextureAtlasSprite getFluidTexture(Fluid fluid) {
@@ -116,27 +93,50 @@ public class RenderHelper {
 		return getTexture(IClientFluidTypeExtensions.of(fluid.getFluid()).getStillTexture(fluid));
 	}
 
-	public static final ResourceLocation MC_BLOCK_SHEET = new ResourceLocation("textures/atlas/blocks.png");
+	public static TextureAtlasSprite getTexture(ResourceLocation location) {
+
+		return textureMap().getSprite(location);
+	}
+
+	public static TextureAtlasSprite getTexture(String location) {
+
+		return textureMap().getSprite(new ResourceLocation(location));
+	}
+
+	public static void resetShaderColor() {
+
+		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+	}
 
 	public static void setBlockTextureSheet() {
 
 		setShaderTexture0(MC_BLOCK_SHEET);
 	}
 
-	private static void setShaderTexture0(ResourceLocation mcBlockSheet) {
-		RenderSystem.setShaderTexture(0, mcBlockSheet);
+	public static void setPosTexShader() {
+
+		RenderSystem.setShader(GameRenderer::getPositionTexShader);
 	}
 
 	public static void setSahderColorFromInt(int color) {
 
-		float red = (float) (color >> 16 & 255) / 255.0F;
-		float green = (float) (color >> 8 & 255) / 255.0F;
-		float blue = (float) (color & 255) / 255.0F;
+		float red = (color >> 16 & 255) / 255.0F;
+		float green = (color >> 8 & 255) / 255.0F;
+		float blue = (color & 255) / 255.0F;
 		RenderSystem.setShaderColor(red, green, blue, 1.0F);
 	}
 
-	public static void setPosTexShader() {
+	private static void setShaderTexture0(ResourceLocation mcBlockSheet) {
+		RenderSystem.setShaderTexture(0, mcBlockSheet);
+	}
 
-		RenderSystem.setShader(GameRenderer::getPositionTexShader);
+	public static Tesselator tesselator() {
+
+		return Tesselator.getInstance();
+	}
+
+	public static TextureAtlas textureMap() {
+
+		return Minecraft.getInstance().getModelManager().getAtlas(InventoryMenu.BLOCK_ATLAS);
 	}
 }

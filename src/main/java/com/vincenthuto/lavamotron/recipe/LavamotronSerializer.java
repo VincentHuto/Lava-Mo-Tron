@@ -14,13 +14,18 @@ import net.minecraft.world.item.crafting.ShapedRecipe;
 
 public class LavamotronSerializer implements RecipeSerializer<LavamotronRecipe> {
 
+	protected LavamotronRecipe createRecipe(ResourceLocation recipeId, String group, Ingredient ingredient,
+			ItemStack result, float experience, int cookingTime) {
+		return new LavamotronRecipe(recipeId, group, ingredient, result, experience, cookingTime);
+	}
+
 	@SuppressWarnings("deprecation")
 	@Override
 	public LavamotronRecipe fromJson(ResourceLocation location, JsonObject object) {
 		String s = GsonHelper.getAsString(object, "group", "");
-		JsonElement jsonelement = (JsonElement) (GsonHelper.isArrayNode(object, "ingredient")
+		JsonElement jsonelement = GsonHelper.isArrayNode(object, "ingredient")
 				? GsonHelper.getAsJsonArray(object, "ingredient")
-				: GsonHelper.getAsJsonObject(object, "ingredient"));
+				: GsonHelper.getAsJsonObject(object, "ingredient");
 		Ingredient ingredient = Ingredient.fromJson(jsonelement);
 		if (!object.has("result"))
 			throw new com.google.gson.JsonSyntaxException("Missing result, expected to find a string or object");
@@ -50,11 +55,6 @@ public class LavamotronSerializer implements RecipeSerializer<LavamotronRecipe> 
 		float xp = buffer.readFloat();
 		int time = buffer.readInt();
 		return createRecipe(id, group, input, result, xp, time);
-	}
-
-	protected LavamotronRecipe createRecipe(ResourceLocation recipeId, String group, Ingredient ingredient,
-			ItemStack result, float experience, int cookingTime) {
-		return new LavamotronRecipe(recipeId, group, ingredient, result, experience, cookingTime);
 	}
 
 	@Override

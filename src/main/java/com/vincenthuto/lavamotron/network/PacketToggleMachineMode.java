@@ -11,17 +11,6 @@ import net.minecraftforge.network.NetworkEvent;
 
 public class PacketToggleMachineMode {
 
-	public PacketToggleMachineMode() {
-	}
-
-	public static void encode(PacketToggleMachineMode msg, FriendlyByteBuf buf) {
-	}
-
-	public static PacketToggleMachineMode decode(FriendlyByteBuf buf) {
-
-		return new PacketToggleMachineMode();
-	}
-
 	public static class Handler {
 
 		public static void handle(final PacketToggleMachineMode msg, Supplier<NetworkEvent.Context> ctx) {
@@ -34,5 +23,16 @@ public class PacketToggleMachineMode {
 			});
 			ctx.get().setPacketHandled(true);
 		}
+	}
+
+	public static PacketToggleMachineMode decode(FriendlyByteBuf buf) {
+
+		return new PacketToggleMachineMode();
+	}
+
+	public static void encode(PacketToggleMachineMode msg, FriendlyByteBuf buf) {
+	}
+
+	public PacketToggleMachineMode() {
 	}
 }

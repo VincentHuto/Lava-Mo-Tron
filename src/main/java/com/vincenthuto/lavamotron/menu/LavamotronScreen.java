@@ -25,9 +25,14 @@ public class LavamotronScreen extends AbstractContainerScreen<LavamotronMenu> {
 	private static final int TOGGLEOFFID = 100;
 	private static final int TOGGLEONID = 101;
 
+	public static int density(FluidStack stack) {
+
+		return !stack.isEmpty() && stack.getFluid() != null ? RenderHelper.density(stack) : 0;
+	}
 	private final ResourceLocation texture;
 	final LavamotronBlockEntity te;
 	GuiButtonTextured toggleOffButton;
+
 	GuiButtonTextured toggleOnButton;
 
 	public LavamotronScreen(LavamotronMenu p_97825_, Inventory p_97827_, Component p_97828_) {
@@ -37,6 +42,13 @@ public class LavamotronScreen extends AbstractContainerScreen<LavamotronMenu> {
 
 	}
 
+	protected int getScaled(int scale, FluidTank tank) {
+		double fraction = (double) tank.getFluidAmount() / 6 * scale / tank.getCapacity();
+		int amount = MathHelper.clamp(MathHelper.round(fraction), 0, scale);
+		return fraction > 0 ? Math.max(1, amount) : amount;
+	}
+
+	@Override
 	public void init() {
 		super.init();
 		leftPos = width / 2 - imageWidth / 2;
@@ -66,43 +78,7 @@ public class LavamotronScreen extends AbstractContainerScreen<LavamotronMenu> {
 
 	}
 
-	protected void renderBg(PoseStack p_97853_, float p_97854_, int p_97855_, int p_97856_) {
-		RenderSystem.setShader(GameRenderer::getPositionTexShader);
-		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-		RenderSystem.setShaderTexture(0, this.texture);
-		int i = this.leftPos;
-		int j = this.topPos;
-		this.blit(p_97853_, i, j, 0, 0, this.imageWidth, this.imageHeight);
-		if (this.menu.isLit()) {
-			int k = this.menu.getLitProgress();
-			this.blit(p_97853_, i + 56, j + 36 + 12 - k, 176, 12 - k, 14, k + 1);
-		}
-		toggleOffButton.visible = false;
-		toggleOnButton.visible = false;
-		int l = this.menu.getBurnProgress();
-		this.blit(p_97853_, i + 79, j + 34, 176, 14, l + 1, 16);
-		if (te.liquidMode) {
-			toggleOffButton.visible = false;
-			toggleOnButton.visible = true;
-
-		} else {
-			toggleOnButton.visible = false;
-			toggleOffButton.visible = true;
-		}
-		toggleOnButton.render(p_97853_, 0, 00, 10);
-		toggleOffButton.render(p_97853_, 0, 00, 10);
-
-	}
-
-	protected void slotClicked(Slot p_97848_, int p_97849_, int p_97850_, ClickType p_97851_) {
-		super.slotClicked(p_97848_, p_97849_, p_97850_, p_97851_);
-	}
-
-	public static int density(FluidStack stack) {
-
-		return !stack.isEmpty() && stack.getFluid() != null ? RenderHelper.density(stack) : 0;
-	}
-
+	@Override
 	public void render(PoseStack pose, int p_97859_, int p_97860_, float p_97861_) {
 		this.renderBackground(pose);
 		this.renderBg(pose, p_97861_, p_97859_, p_97860_);
@@ -132,10 +108,38 @@ public class LavamotronScreen extends AbstractContainerScreen<LavamotronMenu> {
 
 	}
 
-	protected int getScaled(int scale, FluidTank tank) {
-		double fraction = (double) tank.getFluidAmount() / 6 * scale / tank.getCapacity();
-		int amount = MathHelper.clamp(MathHelper.round(fraction), 0, scale);
-		return fraction > 0 ? Math.max(1, amount) : amount;
+	@Override
+	protected void renderBg(PoseStack p_97853_, float p_97854_, int p_97855_, int p_97856_) {
+		RenderSystem.setShader(GameRenderer::getPositionTexShader);
+		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+		RenderSystem.setShaderTexture(0, this.texture);
+		int i = this.leftPos;
+		int j = this.topPos;
+		this.blit(p_97853_, i, j, 0, 0, this.imageWidth, this.imageHeight);
+		if (this.menu.isLit()) {
+			int k = this.menu.getLitProgress();
+			this.blit(p_97853_, i + 56, j + 36 + 12 - k, 176, 12 - k, 14, k + 1);
+		}
+		toggleOffButton.visible = false;
+		toggleOnButton.visible = false;
+		int l = this.menu.getBurnProgress();
+		this.blit(p_97853_, i + 79, j + 34, 176, 14, l + 1, 16);
+		if (te.liquidMode) {
+			toggleOffButton.visible = false;
+			toggleOnButton.visible = true;
+
+		} else {
+			toggleOnButton.visible = false;
+			toggleOffButton.visible = true;
+		}
+		toggleOnButton.render(p_97853_, 0, 00, 10);
+		toggleOffButton.render(p_97853_, 0, 00, 10);
+
+	}
+
+	@Override
+	protected void slotClicked(Slot p_97848_, int p_97849_, int p_97850_, ClickType p_97851_) {
+		super.slotClicked(p_97848_, p_97849_, p_97850_, p_97851_);
 	}
 
 }

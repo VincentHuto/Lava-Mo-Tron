@@ -88,6 +88,12 @@ public class Lavamotron {
 	public static final RegistryObject<RecipeSerializer<?>> lavamotron_serializer = SERIALIZERS.register("lavamotron",
 			LavamotronSerializer::new);
 
+	private static ToIntFunction<BlockState> litBlockEmission(int p_50760_) {
+		return (p_50763_) -> {
+			return p_50763_.getValue(BlockStateProperties.LIT) ? p_50760_ : 0;
+		};
+	}
+
 	public Lavamotron() {
 		final IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 		MinecraftForge.EVENT_BUS.register(this);
@@ -102,20 +108,14 @@ public class Lavamotron {
 
 	}
 
-	private void commonSetup(final FMLCommonSetupEvent event) {
-		PacketHandler.registerChannels();
-	}
-
 	private void clientSetup(final FMLClientSetupEvent event) {
 		event.enqueueWork(() -> {
 			MenuScreens.register(lavamotron_menu.get(), LavamotronScreen::new);
 		});
 	}
 
-	private static ToIntFunction<BlockState> litBlockEmission(int p_50760_) {
-		return (p_50763_) -> {
-			return p_50763_.getValue(BlockStateProperties.LIT) ? p_50760_ : 0;
-		};
+	private void commonSetup(final FMLCommonSetupEvent event) {
+		PacketHandler.registerChannels();
 	}
 
 }

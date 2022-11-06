@@ -65,48 +65,16 @@ public class LavamotronRecipeCategory implements IRecipeCategory<LavamotronRecip
 	}
 
 	@Override
-	public RecipeType<LavamotronRecipe> getRecipeType() {
-		return JEIPlugin.lavamotron_recipe_type;
-	}
+	public void draw(LavamotronRecipe recipe, IRecipeSlotsView recipeSlotsView, PoseStack PoseStack, double mouseX,
+			double mouseY) {
+		overlay.draw(PoseStack);
+		animatedFlame.draw(PoseStack, 57, 37);
 
-	@Nonnull
-	@Override
-	public Component getTitle() {
-		return Component.translatable("Lava-Mo-Tron");
-	}
+		IDrawableAnimated arrow = getArrow(recipe);
+		arrow.draw(PoseStack, 80, 34);
 
-	@Nonnull
-	@Override
-	public IDrawable getBackground() {
-		return background;
-	}
-
-	@Nonnull
-	@Override
-	public IDrawable getIcon() {
-		return icon;
-	}
-
-//	@Override
-//	public void setIngredients(LavamotronRecipe recipe, IIngredients iIngredients) {
-//		List<List<ItemStack>> list = new ArrayList<>();
-//		for (Ingredient ingr : recipe.getIngredients()) {
-//			list.add(Arrays.asList(ingr.getItems()));
-//		}
-//		iIngredients.setInputLists(VanillaTypes.ITEM, list);
-//		iIngredients.setOutput(VanillaTypes.ITEM, recipe.getResultItem());
-//	}
-
-	protected void drawExperience(LavamotronRecipe recipe, PoseStack poseStack, int y) {
-		float experience = recipe.getExperience();
-		if (experience > 0) {
-			MutableComponent experienceString = Component.translatable("gui.jei.category.smelting.experience",
-					experience);
-			Minecraft minecraft = Minecraft.getInstance();
-			Font fontRenderer = minecraft.font;
-			int stringWidth = fontRenderer.width(experienceString);
-			fontRenderer.draw(poseStack, experienceString, background.getWidth() - stringWidth, y, 0xFF808080);
-		}
+		drawExperience(recipe, PoseStack, 0);
+		drawCookTime(recipe, PoseStack, 60);
 	}
 
 	protected void drawCookTime(LavamotronRecipe recipe, PoseStack poseStack, int y) {
@@ -122,6 +90,18 @@ public class LavamotronRecipeCategory implements IRecipeCategory<LavamotronRecip
 		}
 	}
 
+	protected void drawExperience(LavamotronRecipe recipe, PoseStack poseStack, int y) {
+		float experience = recipe.getExperience();
+		if (experience > 0) {
+			MutableComponent experienceString = Component.translatable("gui.jei.category.smelting.experience",
+					experience);
+			Minecraft minecraft = Minecraft.getInstance();
+			Font fontRenderer = minecraft.font;
+			int stringWidth = fontRenderer.width(experienceString);
+			fontRenderer.draw(poseStack, experienceString, background.getWidth() - stringWidth, y, 0xFF808080);
+		}
+	}
+
 	protected IDrawableAnimated getArrow(LavamotronRecipe recipe) {
 		int cookTime = recipe.getCookingTime();
 		if (cookTime <= 0) {
@@ -130,17 +110,37 @@ public class LavamotronRecipeCategory implements IRecipeCategory<LavamotronRecip
 		return this.cachedArrows.getUnchecked(cookTime);
 	}
 
+//	@Override
+//	public void setIngredients(LavamotronRecipe recipe, IIngredients iIngredients) {
+//		List<List<ItemStack>> list = new ArrayList<>();
+//		for (Ingredient ingr : recipe.getIngredients()) {
+//			list.add(Arrays.asList(ingr.getItems()));
+//		}
+//		iIngredients.setInputLists(VanillaTypes.ITEM, list);
+//		iIngredients.setOutput(VanillaTypes.ITEM, recipe.getResultItem());
+//	}
+
+	@Nonnull
 	@Override
-	public void draw(LavamotronRecipe recipe, IRecipeSlotsView recipeSlotsView, PoseStack PoseStack, double mouseX,
-			double mouseY) {
-		overlay.draw(PoseStack);
-		animatedFlame.draw(PoseStack, 57, 37);
+	public IDrawable getBackground() {
+		return background;
+	}
 
-		IDrawableAnimated arrow = getArrow(recipe);
-		arrow.draw(PoseStack, 80, 34);
+	@Nonnull
+	@Override
+	public IDrawable getIcon() {
+		return icon;
+	}
 
-		drawExperience(recipe, PoseStack, 0);
-		drawCookTime(recipe, PoseStack, 60);
+	@Override
+	public RecipeType<LavamotronRecipe> getRecipeType() {
+		return JEIPlugin.lavamotron_recipe_type;
+	}
+
+	@Nonnull
+	@Override
+	public Component getTitle() {
+		return Component.translatable("Lava-Mo-Tron");
 	}
 
 	@Override

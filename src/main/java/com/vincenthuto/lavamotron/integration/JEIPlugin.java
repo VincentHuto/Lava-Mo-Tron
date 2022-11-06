@@ -25,15 +25,15 @@ public class JEIPlugin implements IModPlugin {
 	public static final RecipeType<LavamotronRecipe> lavamotron_recipe_type = RecipeType.create(Lavamotron.MOD_ID,
 			"lavamotron", LavamotronRecipe.class);
 
+	@Nonnull
 	@Override
-	public void registerCategories(IRecipeCategoryRegistration registry) {
-		registry.addRecipeCategories(new LavamotronRecipeCategory(registry.getJeiHelpers().getGuiHelper()));
+	public ResourceLocation getPluginUid() {
+		return ID;
 	}
 
 	@Override
-	public void registerRecipes(@Nonnull IRecipeRegistration registry) {
-		ClientLevel world = Objects.requireNonNull(Minecraft.getInstance().level);
-		registry.addRecipes(lavamotron_recipe_type, LavamotronRecipe.getAllRecipes(world));
+	public void registerCategories(IRecipeCategoryRegistration registry) {
+		registry.addRecipeCategories(new LavamotronRecipeCategory(registry.getJeiHelpers().getGuiHelper()));
 	}
 
 	@Override
@@ -41,10 +41,10 @@ public class JEIPlugin implements IModPlugin {
 		registry.addRecipeCatalyst(new ItemStack(Lavamotron.lavamotron_item_block.get()), lavamotron_recipe_type);
 	}
 
-	@Nonnull
 	@Override
-	public ResourceLocation getPluginUid() {
-		return ID;
+	public void registerRecipes(@Nonnull IRecipeRegistration registry) {
+		ClientLevel world = Objects.requireNonNull(Minecraft.getInstance().level);
+		registry.addRecipes(lavamotron_recipe_type, LavamotronRecipe.getAllRecipes(world));
 	}
 
 }

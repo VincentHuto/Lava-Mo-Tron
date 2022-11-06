@@ -10,8 +10,6 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 
-import net.minecraft.world.item.Item.Properties;
-
 public class LavamotronItemBlock extends BlockItem {
 
 	public LavamotronItemBlock(Block p_40565_, Properties p_40566_) {

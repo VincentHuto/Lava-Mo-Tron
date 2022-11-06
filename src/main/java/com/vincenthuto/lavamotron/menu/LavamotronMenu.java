@@ -30,16 +30,6 @@ public class LavamotronMenu extends AbstractContainerMenu {
 	public static final int RESULT_SLOT = 2;
 	public static final int SLOT_COUNT = 4;
 	public static final int DATA_COUNT = 4;
-	private final Container container;
-	protected final Level level;
-	private final RecipeType<? extends AbstractCookingRecipe> recipeType;
-	private final LavamotronBlockEntity te;
-
-	public LavamotronMenu(final int windowId, final Inventory playerInventory, final FriendlyByteBuf data) {
-		this(windowId, playerInventory, getBlockEntity(playerInventory, data));
-
-	}
-
 	private static LavamotronBlockEntity getBlockEntity(final Inventory playerInv, final FriendlyByteBuf data) {
 		Objects.requireNonNull(playerInv, "playerInventory cannot be null");
 		Objects.requireNonNull(data, "data cannot be null");
@@ -48,6 +38,16 @@ public class LavamotronMenu extends AbstractContainerMenu {
 			return (LavamotronBlockEntity) tileAtPos;
 		}
 		throw new IllegalStateException("Tile entity is not correct! " + tileAtPos);
+	}
+	private final Container container;
+	protected final Level level;
+	private final RecipeType<? extends AbstractCookingRecipe> recipeType;
+
+	private final LavamotronBlockEntity te;
+
+	public LavamotronMenu(final int windowId, final Inventory playerInventory, final FriendlyByteBuf data) {
+		this(windowId, playerInventory, getBlockEntity(playerInventory, data));
+
 	}
 
 	public LavamotronMenu(final int windowId, final Inventory playerInventory, final LavamotronBlockEntity container) {
@@ -71,10 +71,10 @@ public class LavamotronMenu extends AbstractContainerMenu {
 		}
 	}
 
-	public void fillCraftSlotsStackedContents(StackedContents p_38976_) {
-		if (this.container instanceof StackedContentsCompatible) {
-			((StackedContentsCompatible) this.container).fillStackedContents(p_38976_);
-		}
+	@SuppressWarnings("unchecked")
+	protected boolean canSmelt(ItemStack p_38978_) {
+		return this.level.getRecipeManager().getRecipeFor((RecipeType<AbstractCookingRecipe>) this.recipeType,
+				new SimpleContainer(p_38978_), this.level).isPresent();
 	}
 
 	public void clearCraftingContent() {
@@ -82,30 +82,55 @@ public class LavamotronMenu extends AbstractContainerMenu {
 		this.getSlot(2).set(ItemStack.EMPTY);
 	}
 
-	public boolean recipeMatches(Recipe<? super Container> p_38980_) {
-		return p_38980_.matches(this.container, this.level);
+	public void fillCraftSlotsStackedContents(StackedContents p_38976_) {
+		if (this.container instanceof StackedContentsCompatible) {
+			((StackedContentsCompatible) this.container).fillStackedContents(p_38976_);
+		}
 	}
 
-	public int getResultSlotIndex() {
-		return 2;
-	}
-
-	public int getGridWidth() {
-		return 1;
+	public int getBurnProgress() {
+		int i = this.te.cookingProgress;
+		int j = this.te.cookingTotalTime;
+		return j != 0 && i != 0 ? i * 24 / j : 0;
 	}
 
 	public int getGridHeight() {
 		return 1;
 	}
 
+	public int getGridWidth() {
+		return 1;
+	}
+
+	public int getLitProgress() {
+		int i = this.te.litDuration;
+		if (i == 0) {
+			i = 200;
+		}
+		return this.te.litTime * 13 / i;
+	}
+
+	public int getResultSlotIndex() {
+		return 2;
+	}
+
 	public int getSize() {
 		return 4;
 	}
 
-	public boolean stillValid(Player p_38974_) {
-		return this.container.stillValid(p_38974_);
+	public LavamotronBlockEntity getTe() {
+		return this.te;
 	}
 
+	protected boolean isFuel(ItemStack p_38989_) {
+		return net.minecraftforge.common.ForgeHooks.getBurnTime(p_38989_, this.recipeType) > 0;
+	}
+
+	public boolean isLit() {
+		return this.te.litTime > 0;
+	}
+
+	@Override
 	public ItemStack quickMoveStack(Player p_38986_, int index) {
 		ItemStack itemstack = ItemStack.EMPTY;
 		Slot slot = this.slots.get(index);
@@ -154,36 +179,8 @@ public class LavamotronMenu extends AbstractContainerMenu {
 		return itemstack;
 	}
 
-	@SuppressWarnings("unchecked")
-	protected boolean canSmelt(ItemStack p_38978_) {
-		return this.level.getRecipeManager().getRecipeFor((RecipeType<AbstractCookingRecipe>) this.recipeType,
-				new SimpleContainer(p_38978_), this.level).isPresent();
-	}
-
-	protected boolean isFuel(ItemStack p_38989_) {
-		return net.minecraftforge.common.ForgeHooks.getBurnTime(p_38989_, this.recipeType) > 0;
-	}
-
-	public int getBurnProgress() {
-		int i = this.te.cookingProgress;
-		int j = this.te.cookingTotalTime;
-		return j != 0 && i != 0 ? i * 24 / j : 0;
-	}
-
-	public int getLitProgress() {
-		int i = this.te.litDuration;
-		if (i == 0) {
-			i = 200;
-		}
-		return this.te.litTime * 13 / i;
-	}
-
-	public boolean isLit() {
-		return this.te.litTime > 0;
-	}
-
-	public boolean shouldMoveToInventory(int p_150463_) {
-		return p_150463_ != 1;
+	public boolean recipeMatches(Recipe<? super Container> p_38980_) {
+		return p_38980_.matches(this.container, this.level);
 	}
 
 	@Override
@@ -191,7 +188,12 @@ public class LavamotronMenu extends AbstractContainerMenu {
 		super.setData(p_38855_, p_38856_);
 	}
 
-	public LavamotronBlockEntity getTe() {
-		return this.te;
+	public boolean shouldMoveToInventory(int p_150463_) {
+		return p_150463_ != 1;
+	}
+
+	@Override
+	public boolean stillValid(Player p_38974_) {
+		return this.container.stillValid(p_38974_);
 	}
 }
