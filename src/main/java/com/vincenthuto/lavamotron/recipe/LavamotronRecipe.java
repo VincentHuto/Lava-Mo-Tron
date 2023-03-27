@@ -19,7 +19,7 @@ public class LavamotronRecipe extends AbstractCookingRecipe {
 
 	public LavamotronRecipe(ResourceLocation resourceLocation, String group, Ingredient ingredient, ItemStack result,
 			float experience, int cookingTime) {
-		super(Lavamotron.lavamotron_recipe_type.get(), resourceLocation, group, ingredient, result, experience, cookingTime);
+		super(Lavamotron.lavamotron_recipe_type.get(), resourceLocation, group, null, ingredient, result, experience, cookingTime);
 	}
 
 	@Override

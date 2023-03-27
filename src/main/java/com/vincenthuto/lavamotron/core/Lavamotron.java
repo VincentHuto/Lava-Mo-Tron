@@ -13,9 +13,11 @@ import com.vincenthuto.lavamotron.recipe.LavamotronRecipe;
 import com.vincenthuto.lavamotron.recipe.LavamotronSerializer;
 
 import net.minecraft.client.gui.screens.MenuScreens;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.Block;
@@ -27,6 +29,7 @@ import net.minecraft.world.level.material.Material;
 import net.minecraft.world.level.material.MaterialColor;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.extensions.IForgeMenuType;
+import net.minecraftforge.event.CreativeModeTabEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
@@ -65,8 +68,7 @@ public class Lavamotron {
 					.requiresCorrectToolForDrops().strength(1.5F, 6.0F).lightLevel(litBlockEmission(13))));
 
 	public static final RegistryObject<Item> lavamotron_item_block = ITEMS.register("lavamotron",
-			() -> new LavamotronItemBlock(lavamotron_block.get(),
-					new Item.Properties().tab(CreativeModeTab.TAB_DECORATIONS)));
+			() -> new LavamotronItemBlock(lavamotron_block.get(), new Item.Properties()));
 
 	public static final RegistryObject<Item> thermal_shard = ITEMS.register("thermal_shard",
 			() -> new ThermalShardItem());
@@ -99,6 +101,8 @@ public class Lavamotron {
 		MinecraftForge.EVENT_BUS.register(this);
 		modEventBus.addListener(this::commonSetup);
 		modEventBus.addListener(this::clientSetup);
+		modEventBus.addListener(this::buildCreativeTabs);
+
 		ITEMS.register(modEventBus);
 		BLOCKS.register(modEventBus);
 		SERIALIZERS.register(modEventBus);
@@ -106,6 +110,22 @@ public class Lavamotron {
 		CONTAINERS.register(modEventBus);
 		TILES.register(modEventBus);
 
+	}
+
+	private void buildCreativeTabs(CreativeModeTabEvent.Register event) {
+		event.registerCreativeModeTab(new ResourceLocation(MOD_ID, "lavamotrontab"), builder ->
+		// Set name of tab to display
+		builder.title(Component.translatable("item_group." + MOD_ID + ".lavamotrontab"))
+				// Set icon of creative tab
+				.icon(() -> new ItemStack(lavamotron_item_block.get()))
+				.displayItems((enabledFlags, populator, hasPermissions) -> {
+					// Items
+
+					// Blocks
+					populator.accept(lavamotron_item_block.get());
+					populator.accept(thermal_shard.get());
+
+				}));
 	}
 
 	private void clientSetup(final FMLClientSetupEvent event) {

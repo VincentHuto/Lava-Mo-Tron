@@ -94,16 +94,14 @@ public class LavamotronScreen extends AbstractContainerScreen<LavamotronMenu> {
 		}
 		HLGuiUtils.drawMaxWidthString(font, Component.translatable("" + te.tank.getFluidAmount() + "mb"), centerX + 100,
 				centerY + 71, 165, 0xffffff, true);
-//		HLGuiUtils.drawMaxWidthString(font, Component.translatable("Liquid: " + te.liquidMode), centerX + 80, centerY + 10,
-//				165, 0xffffff, true);
 		this.renderTooltip(pose, p_97859_, p_97860_);
 		if (this.toggleOffButton.isHoveredOrFocused() && toggleOffButton.visible) {
-			renderTooltip(pose, Component.translatable("Toggle Liquid Mode On"), this.toggleOffButton.x,
-					this.toggleOffButton.y);
+			renderTooltip(pose, Component.translatable("Toggle Liquid Mode On"), this.toggleOffButton.getX(),
+					this.toggleOffButton.getY());
 		}
 		if (this.toggleOnButton.isHoveredOrFocused() && toggleOnButton.visible) {
-			renderTooltip(pose, Component.translatable("Toggle Liquid Mode Off"), this.toggleOnButton.x,
-					this.toggleOnButton.y);
+			renderTooltip(pose, Component.translatable("Toggle Liquid Mode Off"), this.toggleOnButton.getX(),
+					this.toggleOnButton.getY());
 		}
 
 	}

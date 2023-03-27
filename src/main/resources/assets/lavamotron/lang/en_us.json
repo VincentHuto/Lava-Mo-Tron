@@ -1,6 +1,7 @@
 {
-  "item.lavamotron.thermal_shard" : "Thermal Shard",
-  "block.lavamotron.lavamotron" : "Lava-Mo-Tron",
-  "container.lavamotron" : "Lava-Mo-Tron",
-  "lavamotron.gui.recipebook.toggleRecipes.lavamotron" : "Lava-Mo-Tron"
+	"item_group.lavamotron.lavamotrontab": "Lava-Mo-Tron",
+	"item.lavamotron.thermal_shard": "Thermal Shard",
+	"block.lavamotron.lavamotron": "Lava-Mo-Tron",
+	"container.lavamotron": "Lava-Mo-Tron",
+	"lavamotron.gui.recipebook.toggleRecipes.lavamotron": "Lava-Mo-Tron"
 }

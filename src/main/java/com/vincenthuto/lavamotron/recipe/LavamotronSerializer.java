@@ -3,7 +3,6 @@ package com.vincenthuto.lavamotron.recipe;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import net.minecraft.core.Registry;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
@@ -11,6 +10,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.ShapedRecipe;
+import net.minecraftforge.registries.ForgeRegistries;
 
 public class LavamotronSerializer implements RecipeSerializer<LavamotronRecipe> {
 
@@ -36,9 +36,9 @@ public class LavamotronSerializer implements RecipeSerializer<LavamotronRecipe> 
 			int c = GsonHelper.getAsInt(object, "count");
 			String s1 = GsonHelper.getAsString(object, "result");
 			ResourceLocation resourcelocation = new ResourceLocation(s1);
-			itemstack = new ItemStack(Registry.ITEM.getOptional(resourcelocation).orElseThrow(() -> {
-				return new IllegalStateException("Item: " + s1 + " does not exist");
-			}), c);
+			ForgeRegistries.ITEMS.getValue(resourcelocation);
+
+			itemstack = new ItemStack(ForgeRegistries.ITEMS.getValue(resourcelocation), c);
 		}
 
 		float f = GsonHelper.getAsFloat(object, "experience", 0.0F);

@@ -22,7 +22,7 @@ import net.minecraft.world.level.block.Blocks;
 public class ThermalShardItem extends Item {
 
 	public ThermalShardItem() {
-		super(new Item.Properties().tab(CreativeModeTab.TAB_MATERIALS));
+		super(new Item.Properties());
 	}
 
 	@Override
@@ -39,9 +39,8 @@ public class ThermalShardItem extends Item {
 		BlockPos blockpos = ctx.getClickedPos();
 		Direction direction = ctx.getClickedFace();
 		BlockPos blockpos1 = blockpos.relative(direction);
-		world.playLocalSound(blockpos1.getX() + 0.5D, blockpos1.getY() + 0.5D,
-				blockpos1.getZ() + 0.5D, SoundEvents.PORTAL_AMBIENT, SoundSource.BLOCKS, 0.5F,
-				world.random.nextFloat() * 0.4F + 0.8F, false);
+		world.playLocalSound(blockpos1.getX() + 0.5D, blockpos1.getY() + 0.5D, blockpos1.getZ() + 0.5D,
+				SoundEvents.PORTAL_AMBIENT, SoundSource.BLOCKS, 0.5F, world.random.nextFloat() * 0.4F + 0.8F, false);
 		ctx.getLevel().setBlock(blockpos1, Blocks.LAVA.defaultBlockState(), -999);
 		ctx.getItemInHand().shrink(1);
 		if (!ctx.getLevel().isClientSide) {
