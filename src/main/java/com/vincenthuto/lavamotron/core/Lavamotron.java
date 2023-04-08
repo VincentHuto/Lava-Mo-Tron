@@ -117,8 +117,7 @@ public class Lavamotron {
 		// Set name of tab to display
 		builder.title(Component.translatable("item_group." + MOD_ID + ".lavamotrontab"))
 				// Set icon of creative tab
-				.icon(() -> new ItemStack(lavamotron_item_block.get()))
-				.displayItems((enabledFlags, populator, hasPermissions) -> {
+				.icon(() -> new ItemStack(lavamotron_item_block.get())).displayItems((enabledFlags, populator) -> {
 					// Items
 
 					// Blocks

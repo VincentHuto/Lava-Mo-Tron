@@ -13,6 +13,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
@@ -110,7 +111,7 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 			Recipe<?> recipe = level.getRecipeManager()
 					.getRecipeFor((RecipeType<AbstractCookingRecipe>) te.recipeType, te, level).orElse(null);
 			int i = te.getMaxStackSize();
-			if (!te.isLit() && te.canBurn(recipe, te.items, i)) {
+			if (!te.isLit() && te.canBurn(level.registryAccess(),recipe, te.items, i)) {
 				te.litTime = te.getBurnDuration(itemstack);
 				te.litDuration = te.litTime;
 				if (te.isLit()) {
@@ -126,12 +127,12 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 					}
 				}
 			}
-			if (te.isLit() && te.canBurn(recipe, te.items, i)) {
+			if (te.isLit() && te.canBurn(level.registryAccess(),recipe, te.items, i)) {
 				++te.cookingProgress;
 				if (te.cookingProgress == te.cookingTotalTime) {
 					te.cookingProgress = 0;
 					te.cookingTotalTime = getTotalCookTime(level, te.recipeType, te);
-					if (te.burn(recipe, te.items, i)) {
+					if (te.burn(level.registryAccess(),recipe, te.items, i)) {
 						te.setRecipeUsed(recipe);
 					}
 					flag1 = true;
@@ -187,12 +188,13 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 		p_155004_.awardRecipes(list);
 		this.recipesUsed.clear();
 	}
+	
 
-	private boolean burn(@Nullable Recipe<?> p_155027_, NonNullList<ItemStack> p_155028_, int p_155029_) {
-		if (p_155027_ != null && this.canBurn(p_155027_, p_155028_, p_155029_)) {
+	private boolean burn(RegistryAccess p_266740_,@Nullable Recipe<?> p_155027_, NonNullList<ItemStack> p_155028_, int p_155029_) {
+		if (p_155027_ != null && this.canBurn(this.level.registryAccess(),p_155027_, p_155028_, p_155029_)) {
 			ItemStack itemstack = p_155028_.get(0);
 			@SuppressWarnings("unchecked")
-			ItemStack resultStack = ((Recipe<WorldlyContainer>) p_155027_).assemble(this);
+			ItemStack resultStack = ((Recipe<WorldlyContainer>) p_155027_).assemble(this,p_266740_);
 			ItemStack currentResultStack = p_155028_.get(2);
 			if (!liquidMode) {
 				if (p_155028_.get(3).isEmpty()) {
@@ -243,9 +245,9 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 	}
 
 	@SuppressWarnings("unchecked")
-	private boolean canBurn(@Nullable Recipe<?> p_155006_, NonNullList<ItemStack> p_155007_, int p_155008_) {
+	private boolean canBurn(RegistryAccess p_266924_,@Nullable Recipe<?> p_155006_, NonNullList<ItemStack> p_155007_, int p_155008_) {
 		if (!p_155007_.get(0).isEmpty() && p_155006_ != null) {
-			ItemStack itemstack = ((Recipe<WorldlyContainer>) p_155006_).assemble(this);
+			ItemStack itemstack = ((Recipe<WorldlyContainer>) p_155006_).assemble(this,p_266924_);
 			if (itemstack.isEmpty()) {
 				return false;
 			} else {

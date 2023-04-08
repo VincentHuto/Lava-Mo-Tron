@@ -5,7 +5,7 @@ plugins {
     id 'org.parchmentmc.librarian.forgegradle' version '1.+'
 }
 
-version = '2.4.0'
+version = '2.5.0'
 group = 'com.vincenthuto.lavamotron' 
 archivesBaseName = 'lavamotron'
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
@@ -13,7 +13,7 @@ println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty '
 minecraft {
  
    
-    mappings channel: 'parchment', version: "2023.03.12-1.19.3"
+    mappings channel: 'official', version: '1.19.4'
 
     accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg') // Currently, this location cannot be changed from the default.
     runs {
@@ -95,7 +95,7 @@ repositories {
 dependencies {
    
 
-  minecraft 'net.minecraftforge:forge:1.19.3-44.1.23'
+    minecraft 'net.minecraftforge:forge:1.19.4-45.0.43'
      implementation fg.deobf("curse.maven:hutoslib-478643:${hutoslib_version}")
     compileOnly fg.deobf("mezz.jei:jei-${mc_version}-common-api:${jei_version}")
   compileOnly fg.deobf("mezz.jei:jei-${mc_version}-forge-api:${jei_version}")

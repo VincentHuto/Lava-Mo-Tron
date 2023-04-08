@@ -24,6 +24,7 @@ import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
+import mezz.jei.common.Constants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.Component;
@@ -50,16 +51,15 @@ public class LavamotronRecipeCategory implements IRecipeCategory<LavamotronRecip
 				new ResourceLocation("lavamotron", "textures/container/lavamotron_gui_overlay.png"), 0, 0, 150, 110);
 		icon = guiHelper.createDrawableIngredient(VanillaTypes.ITEM_STACK,
 				new ItemStack(Lavamotron.lavamotron_block.get()));
-		this.staticFlame = guiHelper.createDrawable(new ResourceLocation("jei", "textures/gui/gui_vanilla.png"), 82,
-				114, 14, 14);
-		this.animatedFlame = guiHelper.createAnimatedDrawable(staticFlame, 300, IDrawableAnimated.StartDirection.TOP,
-				true);
+
+		staticFlame = guiHelper.createDrawable(Constants.RECIPE_GUI_VANILLA, 82, 114, 14, 14);
+		animatedFlame = guiHelper.createAnimatedDrawable(staticFlame, 300, IDrawableAnimated.StartDirection.TOP, true);
+
 		this.cachedArrows = CacheBuilder.newBuilder().maximumSize(25).build(new CacheLoader<>() {
 			@Override
 			public IDrawableAnimated load(Integer cookTime) {
-				return guiHelper
-						.drawableBuilder(new ResourceLocation("jei", "textures/gui/gui_vanilla.png"), 82, 128, 24, 17)
-						.buildAnimated(cookTime, IDrawableAnimated.StartDirection.LEFT, false);
+				return guiHelper.drawableBuilder(Constants.RECIPE_GUI_VANILLA, 82, 128, 24, 17).buildAnimated(cookTime,
+						IDrawableAnimated.StartDirection.LEFT, false);
 			}
 		});
 	}
@@ -151,7 +151,7 @@ public class LavamotronRecipeCategory implements IRecipeCategory<LavamotronRecip
 		}
 		builder.addSlot(RecipeIngredientRole.INPUT, 56, 17).addIngredients(VanillaTypes.ITEM_STACK, list.get(0));
 		builder.addSlot(RecipeIngredientRole.OUTPUT, 116, 35).addIngredient(VanillaTypes.ITEM_STACK,
-				recipe.getResultItem());
+				recipe.getResult());
 
 	}
 

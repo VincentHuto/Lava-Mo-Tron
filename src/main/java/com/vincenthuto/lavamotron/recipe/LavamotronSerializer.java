@@ -56,13 +56,14 @@ public class LavamotronSerializer implements RecipeSerializer<LavamotronRecipe> 
 		int time = buffer.readInt();
 		return createRecipe(id, group, input, result, xp, time);
 	}
+	
 
 	@Override
 	public void toNetwork(FriendlyByteBuf buffer, LavamotronRecipe recipe) {
 		buffer.writeResourceLocation(recipe.getId());
 		buffer.writeUtf(recipe.getGroup());
 		buffer.writeItem(recipe.getIngredients().get(0).getItems()[0]);
-		buffer.writeItem(recipe.getResultItem());
+		buffer.writeItem(recipe.getResult());
 		buffer.writeFloat(recipe.getExperience());
 		buffer.writeInt(recipe.getCookingTime());
 	}

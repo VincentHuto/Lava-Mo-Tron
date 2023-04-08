@@ -9,6 +9,7 @@ import com.vincenthuto.lavamotron.network.PacketHandler;
 import com.vincenthuto.lavamotron.network.PacketToggleMachineMode;
 import com.vincenthuto.lavamotron.objects.LavamotronBlockEntity;
 
+import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
@@ -29,6 +30,7 @@ public class LavamotronScreen extends AbstractContainerScreen<LavamotronMenu> {
 
 		return !stack.isEmpty() && stack.getFluid() != null ? RenderHelper.density(stack) : 0;
 	}
+
 	private final ResourceLocation texture;
 	final LavamotronBlockEntity te;
 	GuiButtonTextured toggleOffButton;
@@ -79,49 +81,68 @@ public class LavamotronScreen extends AbstractContainerScreen<LavamotronMenu> {
 	}
 
 	@Override
-	public void render(PoseStack pose, int p_97859_, int p_97860_, float p_97861_) {
+	public void render(PoseStack pose, int mouseX, int mouseY, float parTick) {
 		this.renderBackground(pose);
-		this.renderBg(pose, p_97861_, p_97859_, p_97860_);
+		this.renderBg(pose, parTick, mouseX, mouseY);
 		int centerX = (width / 2) - imageWidth / 2;
 		int centerY = (height / 2) - imageHeight / 2;
 		FluidStack fluid = te.tank.getFluid();
-		super.render(pose, p_97859_, p_97860_, p_97861_);
+		super.render(pose, mouseX, mouseY, parTick);
 		if (fluid != null) {
 			int resourceHeight = height - 2;
 			int amount = getScaled(resourceHeight, te.tank);
 			RenderHelper.drawFluid(centerX + 145, -centerY + (resourceHeight - amount) - 109, te.tank.getFluid(), 20,
 					amount);
+
+			if (mouseOverFluid(mouseX, mouseY, centerX + 145, -centerY + (resourceHeight - amount) - 109, 20, amount)) {
+				renderTooltip(pose, Component.translatable("" + te.tank.getFluidAmount() + "mb"), mouseX, mouseY);
+
+			}
+
 		}
 		HLGuiUtils.drawMaxWidthString(font, Component.translatable("" + te.tank.getFluidAmount() + "mb"), centerX + 100,
 				centerY + 71, 165, 0xffffff, true);
-		this.renderTooltip(pose, p_97859_, p_97860_);
-		if (this.toggleOffButton.isHoveredOrFocused() && toggleOffButton.visible) {
+
+		this.renderTooltip(pose, mouseX, mouseY);
+
+		if (this.toggleOffButton.isMouseOver(mouseX, mouseY) && toggleOffButton.visible) {
 			renderTooltip(pose, Component.translatable("Toggle Liquid Mode On"), this.toggleOffButton.getX(),
 					this.toggleOffButton.getY());
 		}
-		if (this.toggleOnButton.isHoveredOrFocused() && toggleOnButton.visible) {
+		if (this.toggleOnButton.isMouseOver(mouseX, mouseY) && toggleOnButton.visible) {
 			renderTooltip(pose, Component.translatable("Toggle Liquid Mode Off"), this.toggleOnButton.getX(),
 					this.toggleOnButton.getY());
 		}
 
 	}
 
+	public boolean mouseOverFluid(int mouseX, int mouseY, int tankX, int tankY, int tankWidth, int tankHeight) {
+		if (mouseX >= tankX && mouseY >= tankY && mouseX < tankX + tankWidth && mouseY < tankY + tankHeight) {
+			return true;
+
+		} else {
+			return false;
+
+		}
+
+	}
+
 	@Override
-	protected void renderBg(PoseStack p_97853_, float p_97854_, int p_97855_, int p_97856_) {
+	protected void renderBg(PoseStack pose, float p_97854_, int p_97855_, int p_97856_) {
 		RenderSystem.setShader(GameRenderer::getPositionTexShader);
 		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 		RenderSystem.setShaderTexture(0, this.texture);
 		int i = this.leftPos;
 		int j = this.topPos;
-		this.blit(p_97853_, i, j, 0, 0, this.imageWidth, this.imageHeight);
+		GuiComponent.blit(pose, i, j, 0, 0, this.imageWidth, this.imageHeight);
 		if (this.menu.isLit()) {
 			int k = this.menu.getLitProgress();
-			this.blit(p_97853_, i + 56, j + 36 + 12 - k, 176, 12 - k, 14, k + 1);
+			GuiComponent.blit(pose, i + 56, j + 36 + 12 - k, 176, 12 - k, 14, k + 1);
 		}
 		toggleOffButton.visible = false;
 		toggleOnButton.visible = false;
 		int l = this.menu.getBurnProgress();
-		this.blit(p_97853_, i + 79, j + 34, 176, 14, l + 1, 16);
+		GuiComponent.blit(pose, i + 79, j + 34, 176, 14, l + 1, 16);
 		if (te.liquidMode) {
 			toggleOffButton.visible = false;
 			toggleOnButton.visible = true;
@@ -130,8 +151,8 @@ public class LavamotronScreen extends AbstractContainerScreen<LavamotronMenu> {
 			toggleOnButton.visible = false;
 			toggleOffButton.visible = true;
 		}
-		toggleOnButton.render(p_97853_, 0, 00, 10);
-		toggleOffButton.render(p_97853_, 0, 00, 10);
+		toggleOnButton.render(pose, 0, 00, 10);
+		toggleOffButton.render(pose, 0, 00, 10);
 
 	}
 
