@@ -24,9 +24,9 @@ import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
-import mezz.jei.common.Constants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -52,32 +52,33 @@ public class LavamotronRecipeCategory implements IRecipeCategory<LavamotronRecip
 		icon = guiHelper.createDrawableIngredient(VanillaTypes.ITEM_STACK,
 				new ItemStack(Lavamotron.lavamotron_block.get()));
 
-		staticFlame = guiHelper.createDrawable(Constants.RECIPE_GUI_VANILLA, 82, 114, 14, 14);
+		staticFlame = guiHelper.createDrawable(new ResourceLocation("jei", "textures/jei/gui/gui_vanilla.png"), 82, 114,
+				14, 14);
 		animatedFlame = guiHelper.createAnimatedDrawable(staticFlame, 300, IDrawableAnimated.StartDirection.TOP, true);
 
 		this.cachedArrows = CacheBuilder.newBuilder().maximumSize(25).build(new CacheLoader<>() {
 			@Override
 			public IDrawableAnimated load(Integer cookTime) {
-				return guiHelper.drawableBuilder(Constants.RECIPE_GUI_VANILLA, 82, 128, 24, 17).buildAnimated(cookTime,
-						IDrawableAnimated.StartDirection.LEFT, false);
+				return guiHelper.drawableBuilder(new ResourceLocation("jei", "textures/jei/gui/gui_vanilla.png"), 82,
+						128, 24, 17).buildAnimated(cookTime, IDrawableAnimated.StartDirection.LEFT, false);
 			}
 		});
 	}
 
 	@Override
-	public void draw(LavamotronRecipe recipe, IRecipeSlotsView recipeSlotsView, PoseStack PoseStack, double mouseX,
+	public void draw(LavamotronRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX,
 			double mouseY) {
-		overlay.draw(PoseStack);
-		animatedFlame.draw(PoseStack, 57, 37);
+		overlay.draw(guiGraphics);
+		animatedFlame.draw(guiGraphics, 57, 37);
 
 		IDrawableAnimated arrow = getArrow(recipe);
-		arrow.draw(PoseStack, 80, 34);
+		arrow.draw(guiGraphics, 80, 34);
 
-		drawExperience(recipe, PoseStack, 0);
-		drawCookTime(recipe, PoseStack, 60);
+		drawExperience(recipe, guiGraphics, 0);
+		drawCookTime(recipe, guiGraphics, 60);
 	}
 
-	protected void drawCookTime(LavamotronRecipe recipe, PoseStack poseStack, int y) {
+	protected void drawCookTime(LavamotronRecipe recipe, GuiGraphics graphics, int y) {
 		int cookTime = recipe.getCookingTime();
 		if (cookTime > 0) {
 			int cookTimeSeconds = cookTime / 20;
@@ -86,11 +87,12 @@ public class LavamotronRecipeCategory implements IRecipeCategory<LavamotronRecip
 			Minecraft minecraft = Minecraft.getInstance();
 			Font fontRenderer = minecraft.font;
 			int stringWidth = fontRenderer.width(timeString);
-			fontRenderer.draw(poseStack, timeString, background.getWidth() - stringWidth, y, 0xFF808080);
+			graphics.drawString(fontRenderer, timeString, background.getWidth() - stringWidth, y, 0xFF808080,false);
+
 		}
 	}
 
-	protected void drawExperience(LavamotronRecipe recipe, PoseStack poseStack, int y) {
+	protected void drawExperience(LavamotronRecipe recipe,GuiGraphics graphics, int y) {
 		float experience = recipe.getExperience();
 		if (experience > 0) {
 			MutableComponent experienceString = Component.translatable("gui.jei.category.smelting.experience",
@@ -98,7 +100,8 @@ public class LavamotronRecipeCategory implements IRecipeCategory<LavamotronRecip
 			Minecraft minecraft = Minecraft.getInstance();
 			Font fontRenderer = minecraft.font;
 			int stringWidth = fontRenderer.width(experienceString);
-			fontRenderer.draw(poseStack, experienceString, background.getWidth() - stringWidth, y, 0xFF808080);
+			graphics.drawString(fontRenderer, experienceString, background.getWidth() - stringWidth, y, 0xFF808080,false);
+		
 		}
 	}
 

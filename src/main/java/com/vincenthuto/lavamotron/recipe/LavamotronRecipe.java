@@ -14,8 +14,8 @@ import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
 
 public class LavamotronRecipe extends AbstractCookingRecipe {
-	
-	
+
+
 	public static List<LavamotronRecipe> getAllRecipes(Level world) {
 		return world.getRecipeManager().getAllRecipesFor(Lavamotron.lavamotron_recipe_type.get());
 	}
@@ -37,7 +37,7 @@ public class LavamotronRecipe extends AbstractCookingRecipe {
 	public ItemStack getResultItem(RegistryAccess p_266851_) {
 		return this.result;
 	}
-	
+
 	public ItemStack getResult() {
 		return this.result;
 	}

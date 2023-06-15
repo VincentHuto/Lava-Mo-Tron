@@ -41,7 +41,7 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.network.NetworkHooks;
 
 public class LavamotronBlock extends BaseEntityBlock {
@@ -173,7 +173,7 @@ public class LavamotronBlock extends BaseEntityBlock {
 	public InteractionResult use(BlockState p_48706_, Level p_48707_, BlockPos p_48708_, Player p_48709_,
 			InteractionHand p_48710_, BlockHitResult p_48711_) {
 		ItemStack stack = p_48709_.getItemInHand(p_48710_);
-		if (stack.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY).isPresent()) {
+		if (stack.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM).isPresent()) {
 			if (p_48707_.getBlockEntity(p_48708_) instanceof LavamotronBlockEntity tank) {
 				ItemStack result = tank.handleContainerInteraction(stack, p_48709_);
 				if (!result.isEmpty()) {

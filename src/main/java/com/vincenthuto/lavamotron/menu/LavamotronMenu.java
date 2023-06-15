@@ -16,7 +16,6 @@ import net.minecraft.world.inventory.FurnaceResultSlot;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.StackedContentsCompatible;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeType;
@@ -30,15 +29,17 @@ public class LavamotronMenu extends AbstractContainerMenu {
 	public static final int RESULT_SLOT = 2;
 	public static final int SLOT_COUNT = 4;
 	public static final int DATA_COUNT = 4;
+
 	private static LavamotronBlockEntity getBlockEntity(final Inventory playerInv, final FriendlyByteBuf data) {
 		Objects.requireNonNull(playerInv, "playerInventory cannot be null");
 		Objects.requireNonNull(data, "data cannot be null");
-		final BlockEntity tileAtPos = playerInv.player.level.getBlockEntity(data.readBlockPos());
+		final BlockEntity tileAtPos = playerInv.player.level().getBlockEntity(data.readBlockPos());
 		if (tileAtPos instanceof LavamotronBlockEntity) {
 			return (LavamotronBlockEntity) tileAtPos;
 		}
 		throw new IllegalStateException("Tile entity is not correct! " + tileAtPos);
 	}
+
 	private final Container container;
 	protected final Level level;
 	private final RecipeType<? extends AbstractCookingRecipe> recipeType;
@@ -54,7 +55,7 @@ public class LavamotronMenu extends AbstractContainerMenu {
 		super(Lavamotron.lavamotron_menu.get(), windowId);
 		this.recipeType = Lavamotron.lavamotron_recipe_type.get();
 		this.container = container;
-		this.level = playerInventory.player.level;
+		this.level = playerInventory.player.level();
 		this.te = container;
 		this.addSlot(new Slot(container, 0, 56, 17));
 		this.addSlot(new LavamotronBucketSlot(this, container, 4, 147, 63));
@@ -131,7 +132,7 @@ public class LavamotronMenu extends AbstractContainerMenu {
 	}
 
 	@Override
-	public ItemStack quickMoveStack(Player p_38986_, int index) {
+	public ItemStack quickMoveStack(Player player, int index) {
 		ItemStack itemstack = ItemStack.EMPTY;
 		Slot slot = this.slots.get(index);
 		if (slot != null && slot.hasItem()) {
@@ -141,6 +142,7 @@ public class LavamotronMenu extends AbstractContainerMenu {
 				if (!this.moveItemStackTo(itemstack1, 3, 39, true)) {
 					return ItemStack.EMPTY;
 				}
+
 				slot.onQuickCraft(itemstack1, itemstack);
 			} else if (index != 1 && index != 0) {
 				if (this.canSmelt(itemstack1)) {
@@ -148,12 +150,10 @@ public class LavamotronMenu extends AbstractContainerMenu {
 						return ItemStack.EMPTY;
 					}
 				} else if (this.isFuel(itemstack1)) {
-					if (!this.moveItemStackTo(itemstack1, 1, 3, false)) {
+					if (!this.moveItemStackTo(itemstack1, 1, 2, false)) {
 						return ItemStack.EMPTY;
 					}
-				} else if (itemstack1.getItem() == Items.BUCKET) {
-
-				} else if (index >= 3 && index != 4 && index < 30) {
+				} else if (index >= 3 && index < 30) {
 					if (!this.moveItemStackTo(itemstack1, 30, 39, false)) {
 						return ItemStack.EMPTY;
 					}
@@ -165,7 +165,7 @@ public class LavamotronMenu extends AbstractContainerMenu {
 			}
 
 			if (itemstack1.isEmpty()) {
-				slot.set(ItemStack.EMPTY);
+				slot.setByPlayer(ItemStack.EMPTY);
 			} else {
 				slot.setChanged();
 			}
@@ -174,8 +174,9 @@ public class LavamotronMenu extends AbstractContainerMenu {
 				return ItemStack.EMPTY;
 			}
 
-			slot.onTake(p_38986_, itemstack1);
+			slot.onTake(player, itemstack1);
 		}
+
 		return itemstack;
 	}
 

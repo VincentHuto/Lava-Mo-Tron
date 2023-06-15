@@ -1,6 +1,6 @@
 modLoader="javafml" #mandatory
 
-loaderVersion="[44,)" #mandatory This is typically bumped every Minecraft version by Forge. See our download page for lists of versions.
+loaderVersion="[47,)" #mandatory This is typically bumped every Minecraft version by Forge. See our download page for lists of versions.
 
 license="All rights reserved"
 
@@ -11,7 +11,7 @@ issueTrackerURL="http://my.issue.tracker/" #optional
 modId="lavamotron" #mandatory
 
 # The version number of the mod - there's a few well known ${} variables useable here or just hardcode it
-version="2.4.0" #mandatory
+version="3.0.0" #mandatory
 
  # A display name for the mod
 displayName="Lava-Mo-Tron" #mandatory
@@ -20,7 +20,7 @@ displayName="Lava-Mo-Tron" #mandatory
 updateJSONURL="http://myurl.me/" #optional
 
 # A URL for the "homepage" for this mod, displayed in the mod UI
-displayURL="http://curseforge.com/" #optional
+displayURL="https://legacy.curseforge.com/minecraft/mc-mods/lava-mo-tron" #optional
 
 # A file name (in the root of the mod JAR) containing a logo for display
 logoFile="logo.png" #optional
@@ -36,7 +36,7 @@ authors="Vincent_Huto" #optional
 # The description text for the mod (multi line!) (#mandatory)
 description='''
 A small mod allowing a simple machine to create lava!
-~Huto
+~Huto 
 '''
 
 
@@ -48,7 +48,7 @@ A small mod allowing a simple machine to create lava!
     # Does this dependency have to exist - if not, ordering below must be specified
     mandatory=true #mandatory
     # The version range of the dependency
-    versionRange="[44,)" #mandatory
+    versionRange="[47,)" #mandatory
     # An ordering relationship for the dependency - BEFORE or AFTER required if the relationship is not mandatory
     ordering="NONE"
     # Side this dependency is applied on - BOTH, CLIENT or SERVER
@@ -58,7 +58,7 @@ A small mod allowing a simple machine to create lava!
     modId="minecraft"
     mandatory=true
 # This version range declares a minimum of the current minecraft version up to but not including the next major version
-    versionRange="[1.19.3,1.20)"
+    versionRange="[1.20,1.20.2)"
     ordering="NONE"
     side="BOTH"
 

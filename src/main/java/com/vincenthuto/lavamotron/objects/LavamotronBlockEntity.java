@@ -43,15 +43,14 @@ import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fluids.FluidActionResult;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidUtil;
-import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler.FluidAction;
 import net.minecraftforge.fluids.capability.templates.FluidTank;
-import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.wrapper.PlayerInvWrapper;
 import net.minecraftforge.items.wrapper.SidedInvWrapper;
@@ -73,6 +72,7 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 	public static final int NUM_DATA_VALUES = 4;
 	public static final int BURN_TIME_STANDARD = 200;
 	public static final int BURN_COOL_SPEED = 2;
+
 	private static void createExperience(ServerLevel p_154999_, Vec3 p_155000_, int p_155001_, float p_155002_) {
 		int i = Mth.floor(p_155001_ * p_155002_);
 		float f = Mth.frac(p_155001_ * p_155002_);
@@ -82,6 +82,7 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 
 		ExperienceOrb.award(p_154999_, p_155000_, i);
 	}
+
 	@SuppressWarnings("unchecked")
 	private static int getTotalCookTime(Level p_155010_, RecipeType<? extends AbstractCookingRecipe> p_155011_,
 			Container p_155012_) {
@@ -89,9 +90,11 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 				.getRecipeFor((RecipeType<AbstractCookingRecipe>) p_155011_, p_155012_, p_155010_)
 				.map(AbstractCookingRecipe::getCookingTime).orElse(200);
 	}
+
 	public static boolean isFuel(ItemStack p_58400_) {
 		return net.minecraftforge.common.ForgeHooks.getBurnTime(p_58400_, null) > 0;
 	}
+
 	@SuppressWarnings("unchecked")
 	public static void serverTick(Level level, BlockPos pos, BlockState state, LavamotronBlockEntity te) {
 		boolean flag = te.isLit();
@@ -111,7 +114,7 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 			Recipe<?> recipe = level.getRecipeManager()
 					.getRecipeFor((RecipeType<AbstractCookingRecipe>) te.recipeType, te, level).orElse(null);
 			int i = te.getMaxStackSize();
-			if (!te.isLit() && te.canBurn(level.registryAccess(),recipe, te.items, i)) {
+			if (!te.isLit() && te.canBurn(level.registryAccess(), recipe, te.items, i)) {
 				te.litTime = te.getBurnDuration(itemstack);
 				te.litDuration = te.litTime;
 				if (te.isLit()) {
@@ -127,12 +130,12 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 					}
 				}
 			}
-			if (te.isLit() && te.canBurn(level.registryAccess(),recipe, te.items, i)) {
+			if (te.isLit() && te.canBurn(level.registryAccess(), recipe, te.items, i)) {
 				++te.cookingProgress;
 				if (te.cookingProgress == te.cookingTotalTime) {
 					te.cookingProgress = 0;
 					te.cookingTotalTime = getTotalCookTime(level, te.recipeType, te);
-					if (te.burn(level.registryAccess(),recipe, te.items, i)) {
+					if (te.burn(level.registryAccess(), recipe, te.items, i)) {
 						te.setRecipeUsed(recipe);
 					}
 					flag1 = true;
@@ -157,6 +160,7 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 		te.sendUpdates();
 
 	}
+
 	public NonNullList<ItemStack> items = NonNullList.withSize(5, ItemStack.EMPTY);
 	public int litTime;
 
@@ -184,17 +188,17 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 	}
 
 	public void awardUsedRecipesAndPopExperience(ServerPlayer p_155004_) {
-		List<Recipe<?>> list = this.getRecipesToAwardAndPopExperience(p_155004_.getLevel(), p_155004_.position());
+		List<Recipe<?>> list = this.getRecipesToAwardAndPopExperience(p_155004_.serverLevel(), p_155004_.position());
 		p_155004_.awardRecipes(list);
 		this.recipesUsed.clear();
 	}
-	
 
-	private boolean burn(RegistryAccess p_266740_,@Nullable Recipe<?> p_155027_, NonNullList<ItemStack> p_155028_, int p_155029_) {
-		if (p_155027_ != null && this.canBurn(this.level.registryAccess(),p_155027_, p_155028_, p_155029_)) {
+	private boolean burn(RegistryAccess p_266740_, @Nullable Recipe<?> p_155027_, NonNullList<ItemStack> p_155028_,
+			int p_155029_) {
+		if (p_155027_ != null && this.canBurn(this.level.registryAccess(), p_155027_, p_155028_, p_155029_)) {
 			ItemStack itemstack = p_155028_.get(0);
 			@SuppressWarnings("unchecked")
-			ItemStack resultStack = ((Recipe<WorldlyContainer>) p_155027_).assemble(this,p_266740_);
+			ItemStack resultStack = ((Recipe<WorldlyContainer>) p_155027_).assemble(this, p_266740_);
 			ItemStack currentResultStack = p_155028_.get(2);
 			if (!liquidMode) {
 				if (p_155028_.get(3).isEmpty()) {
@@ -245,9 +249,10 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 	}
 
 	@SuppressWarnings("unchecked")
-	private boolean canBurn(RegistryAccess p_266924_,@Nullable Recipe<?> p_155006_, NonNullList<ItemStack> p_155007_, int p_155008_) {
+	private boolean canBurn(RegistryAccess p_266924_, @Nullable Recipe<?> p_155006_, NonNullList<ItemStack> p_155007_,
+			int p_155008_) {
 		if (!p_155007_.get(0).isEmpty() && p_155006_ != null) {
-			ItemStack itemstack = ((Recipe<WorldlyContainer>) p_155006_).assemble(this,p_266924_);
+			ItemStack itemstack = ((Recipe<WorldlyContainer>) p_155006_).assemble(this, p_266924_);
 			if (itemstack.isEmpty()) {
 				return false;
 			} else {
@@ -258,7 +263,7 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 					} else {
 						if (resultStack.isEmpty()) {
 							return true;
-						} else if (!resultStack.sameItem(itemstack)) {
+						} else if (!ItemStack.isSameItem(resultStack, itemstack)) {
 							return false;
 						} else if (resultStack.getCount() + itemstack.getCount() <= p_155008_
 								&& resultStack.getCount() + itemstack.getCount() <= resultStack.getMaxStackSize()) { // fix:
@@ -270,7 +275,7 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 				} else {
 					if (resultStack.isEmpty()) {
 						return true;
-					} else if (!resultStack.sameItem(itemstack)) {
+					} else if (!ItemStack.isSameItem(resultStack, itemstack)) {
 						return false;
 					} else if (resultStack.getCount() + itemstack.getCount() <= p_155008_
 							&& resultStack.getCount() + itemstack.getCount() <= resultStack.getMaxStackSize()) { // fix:
@@ -335,7 +340,7 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 	@Override
 	public <T> net.minecraftforge.common.util.LazyOptional<T> getCapability(
 			net.minecraftforge.common.capabilities.Capability<T> capability, @Nullable Direction facing) {
-		if (!this.remove && facing != null && capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+		if (!this.remove && facing != null && capability == ForgeCapabilities.ITEM_HANDLER) {
 			switch (facing) {
 			case UP:
 				return handlers[0].cast();
@@ -349,7 +354,7 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 				return handlers[2].cast();
 			}
 		}
-		if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY)
+		if (capability == ForgeCapabilities.FLUID_HANDLER)
 			return holder.cast();
 
 		return super.getCapability(capability, facing);
@@ -484,7 +489,7 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 		return this.litTime > 0;
 	}
 
-	//NBT STUFF
+	// NBT STUFF
 	@Override
 	public void load(CompoundTag p_155025_) {
 		super.load(p_155025_);
@@ -522,7 +527,7 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 
 	}
 
-@Override
+	@Override
 	public ItemStack removeItem(int p_58330_, int p_58331_) {
 		return ContainerHelper.removeItem(this.items, p_58330_, p_58331_);
 	}
@@ -564,7 +569,7 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 	@Override
 	public void setItem(int p_58333_, ItemStack p_58334_) {
 		ItemStack itemstack = this.items.get(p_58333_);
-		boolean flag = !p_58334_.isEmpty() && p_58334_.sameItem(itemstack) && ItemStack.tagMatches(p_58334_, itemstack);
+		boolean flag = !p_58334_.isEmpty() && ItemStack.isSameItemSameTags(itemstack, p_58334_);
 		this.items.set(p_58333_, p_58334_);
 		if (p_58334_.getCount() > this.getMaxStackSize()) {
 			p_58334_.setCount(this.getMaxStackSize());
@@ -575,6 +580,21 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 			this.setChanged();
 		}
 
+	}
+
+	public static boolean tagMatches(ItemStack pStack, ItemStack pOther) {
+		if (pStack.isEmpty() && pOther.isEmpty()) {
+			return true;
+		} else if (!pStack.isEmpty() && !pOther.isEmpty()) {
+			if (pStack.getTag() == null && pOther.getTag() != null) {
+				return false;
+			} else {
+				return (pStack.getTag() == null || pStack.getTag().equals(pOther.getTag()))
+						&& pStack.areCapsCompatible(pOther);
+			}
+		} else {
+			return false;
+		}
 	}
 
 	public void setLiquidMode(boolean liquidModeIn) {
@@ -593,7 +613,7 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 	@Override
 	public boolean stillValid(Player player) {
 		return (this.level.getBlockEntity(this.worldPosition) != this) ? false
-				: player.distanceToSqr(this.worldPosition.getX() + 0.5D,
-						this.worldPosition.getY() + 0.5D, this.worldPosition.getZ() + 0.5D) <= 64.0D;
+				: player.distanceToSqr(this.worldPosition.getX() + 0.5D, this.worldPosition.getY() + 0.5D,
+						this.worldPosition.getZ() + 0.5D) <= 64.0D;
 	}
 }

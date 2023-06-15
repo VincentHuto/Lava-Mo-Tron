@@ -1,7 +1,6 @@
 package com.vincenthuto.lavamotron.menu;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.vincenthuto.hutoslib.client.screen.GuiButtonTextured;
 import com.vincenthuto.hutoslib.client.screen.HLGuiUtils;
 import com.vincenthuto.lavamotron.core.Lavamotron;
@@ -9,9 +8,8 @@ import com.vincenthuto.lavamotron.network.PacketHandler;
 import com.vincenthuto.lavamotron.network.PacketToggleMachineMode;
 import com.vincenthuto.lavamotron.objects.LavamotronBlockEntity;
 
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
@@ -81,13 +79,13 @@ public class LavamotronScreen extends AbstractContainerScreen<LavamotronMenu> {
 	}
 
 	@Override
-	public void render(PoseStack pose, int mouseX, int mouseY, float parTick) {
-		this.renderBackground(pose);
-		this.renderBg(pose, parTick, mouseX, mouseY);
+	public void render(GuiGraphics graphics, int mouseX, int mouseY, float parTick) {
+		this.renderBackground(graphics);
+		this.renderBg(graphics, parTick, mouseX, mouseY);
 		int centerX = (width / 2) - imageWidth / 2;
 		int centerY = (height / 2) - imageHeight / 2;
 		FluidStack fluid = te.tank.getFluid();
-		super.render(pose, mouseX, mouseY, parTick);
+		super.render(graphics, mouseX, mouseY, parTick);
 		if (fluid != null) {
 			int resourceHeight = height - 2;
 			int amount = getScaled(resourceHeight, te.tank);
@@ -95,23 +93,22 @@ public class LavamotronScreen extends AbstractContainerScreen<LavamotronMenu> {
 					amount);
 
 			if (mouseOverFluid(mouseX, mouseY, centerX + 145, -centerY + (resourceHeight - amount) - 109, 20, amount)) {
-				renderTooltip(pose, Component.translatable("" + te.tank.getFluidAmount() + "mb"), mouseX, mouseY);
-
+				graphics.renderTooltip(font, Component.translatable("" + te.tank.getFluidAmount() + "mb"), mouseX,
+						mouseY);
 			}
-
 		}
 		HLGuiUtils.drawMaxWidthString(font, Component.translatable("" + te.tank.getFluidAmount() + "mb"), centerX + 100,
 				centerY + 71, 165, 0xffffff, true);
 
-		this.renderTooltip(pose, mouseX, mouseY);
+		this.renderTooltip(graphics, mouseX, mouseY);
 
 		if (this.toggleOffButton.isMouseOver(mouseX, mouseY) && toggleOffButton.visible) {
-			renderTooltip(pose, Component.translatable("Toggle Liquid Mode On"), this.toggleOffButton.getX(),
+			graphics.renderTooltip(font, Component.translatable("Toggle Liquid Mode On"), this.toggleOffButton.getX(),
 					this.toggleOffButton.getY());
 		}
 		if (this.toggleOnButton.isMouseOver(mouseX, mouseY) && toggleOnButton.visible) {
-			renderTooltip(pose, Component.translatable("Toggle Liquid Mode Off"), this.toggleOnButton.getX(),
-					this.toggleOnButton.getY());
+			graphics.renderTooltip(font, Component.translatable("Toggle Liquid Mode Off"), this.toggleOffButton.getX(),
+					this.toggleOffButton.getY());
 		}
 
 	}
@@ -128,21 +125,19 @@ public class LavamotronScreen extends AbstractContainerScreen<LavamotronMenu> {
 	}
 
 	@Override
-	protected void renderBg(PoseStack pose, float p_97854_, int p_97855_, int p_97856_) {
-		RenderSystem.setShader(GameRenderer::getPositionTexShader);
+	protected void renderBg(GuiGraphics graphics, float p_97854_, int p_97855_, int p_97856_) {
 		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-		RenderSystem.setShaderTexture(0, this.texture);
 		int i = this.leftPos;
 		int j = this.topPos;
-		GuiComponent.blit(pose, i, j, 0, 0, this.imageWidth, this.imageHeight);
+		graphics.blit(texture, i, j, 0, 0, this.imageWidth, this.imageHeight);
 		if (this.menu.isLit()) {
 			int k = this.menu.getLitProgress();
-			GuiComponent.blit(pose, i + 56, j + 36 + 12 - k, 176, 12 - k, 14, k + 1);
+			graphics.blit(texture, i + 56, j + 36 + 12 - k, 176, 12 - k, 14, k + 1);
 		}
 		toggleOffButton.visible = false;
 		toggleOnButton.visible = false;
 		int l = this.menu.getBurnProgress();
-		GuiComponent.blit(pose, i + 79, j + 34, 176, 14, l + 1, 16);
+		graphics.blit(texture, i + 79, j + 34, 176, 14, l + 1, 16);
 		if (te.liquidMode) {
 			toggleOffButton.visible = false;
 			toggleOnButton.visible = true;
@@ -151,8 +146,8 @@ public class LavamotronScreen extends AbstractContainerScreen<LavamotronMenu> {
 			toggleOnButton.visible = false;
 			toggleOffButton.visible = true;
 		}
-		toggleOnButton.render(pose, 0, 00, 10);
-		toggleOffButton.render(pose, 0, 00, 10);
+		toggleOnButton.render(graphics, 0, 00, 10);
+		toggleOffButton.render(graphics, 0, 00, 10);
 
 	}
 
