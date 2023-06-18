@@ -1,12 +1,12 @@
-package com.vincenthuto.lavamotron.objects;
+package com.vincenthuto.lavamotron.common.objects;
 
 import java.util.List;
 
 import javax.annotation.Nullable;
 
 import com.google.common.collect.Lists;
-import com.vincenthuto.lavamotron.core.Lavamotron;
-import com.vincenthuto.lavamotron.menu.LavamotronMenu;
+import com.vincenthuto.lavamotron.Lavamotron;
+import com.vincenthuto.lavamotron.common.menu.LavamotronMenu;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;

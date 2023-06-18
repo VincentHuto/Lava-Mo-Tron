@@ -1,4 +1,4 @@
-package com.vincenthuto.lavamotron.menu;
+package com.vincenthuto.lavamotron.common.menu;
 
 import com.mojang.blaze3d.platform.GlStateManager.DestFactor;
 import com.mojang.blaze3d.platform.GlStateManager.SourceFactor;

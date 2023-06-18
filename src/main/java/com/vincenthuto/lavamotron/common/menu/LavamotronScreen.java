@@ -1,12 +1,12 @@
-package com.vincenthuto.lavamotron.menu;
+package com.vincenthuto.lavamotron.common.menu;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.vincenthuto.hutoslib.client.screen.GuiButtonTextured;
 import com.vincenthuto.hutoslib.client.screen.HLGuiUtils;
-import com.vincenthuto.lavamotron.core.Lavamotron;
-import com.vincenthuto.lavamotron.network.PacketHandler;
-import com.vincenthuto.lavamotron.network.PacketToggleMachineMode;
-import com.vincenthuto.lavamotron.objects.LavamotronBlockEntity;
+import com.vincenthuto.lavamotron.Lavamotron;
+import com.vincenthuto.lavamotron.common.network.PacketHandler;
+import com.vincenthuto.lavamotron.common.network.PacketToggleMachineMode;
+import com.vincenthuto.lavamotron.common.objects.LavamotronBlockEntity;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;

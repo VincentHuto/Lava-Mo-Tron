@@ -1,10 +1,10 @@
-package com.vincenthuto.lavamotron.objects;
+package com.vincenthuto.lavamotron.common.objects;
 
 import javax.annotation.Nullable;
 
 import com.vincenthuto.hutoslib.client.particle.factory.EmberParticleFactory;
 import com.vincenthuto.hutoslib.client.particle.util.ParticleColor;
-import com.vincenthuto.lavamotron.core.Lavamotron;
+import com.vincenthuto.lavamotron.Lavamotron;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;

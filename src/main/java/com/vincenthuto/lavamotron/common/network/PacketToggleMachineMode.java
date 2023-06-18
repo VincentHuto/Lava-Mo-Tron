@@ -1,9 +1,9 @@
-package com.vincenthuto.lavamotron.network;
+package com.vincenthuto.lavamotron.common.network;
 
 import java.util.function.Supplier;
 
-import com.vincenthuto.lavamotron.menu.LavamotronMenu;
-import com.vincenthuto.lavamotron.objects.LavamotronBlockEntity;
+import com.vincenthuto.lavamotron.common.menu.LavamotronMenu;
+import com.vincenthuto.lavamotron.common.objects.LavamotronBlockEntity;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.inventory.AbstractContainerMenu;

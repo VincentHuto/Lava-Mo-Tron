@@ -1,4 +1,4 @@
-package com.vincenthuto.lavamotron.integration;
+package com.vincenthuto.lavamotron.compat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,9 +9,8 @@ import javax.annotation.Nonnull;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.vincenthuto.lavamotron.core.Lavamotron;
-import com.vincenthuto.lavamotron.recipe.LavamotronRecipe;
+import com.vincenthuto.lavamotron.Lavamotron;
+import com.vincenthuto.lavamotron.common.recipe.LavamotronRecipe;
 
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;

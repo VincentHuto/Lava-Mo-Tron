@@ -1,22 +1,21 @@
-package com.vincenthuto.lavamotron.core;
+package com.vincenthuto.lavamotron;
 
 import java.util.function.ToIntFunction;
 
 import com.vincenthuto.hutoslib.HutosLib;
-import com.vincenthuto.lavamotron.menu.LavamotronMenu;
-import com.vincenthuto.lavamotron.menu.LavamotronScreen;
-import com.vincenthuto.lavamotron.network.PacketHandler;
-import com.vincenthuto.lavamotron.objects.LavamotronBlock;
-import com.vincenthuto.lavamotron.objects.LavamotronBlockEntity;
-import com.vincenthuto.lavamotron.objects.LavamotronItemBlock;
-import com.vincenthuto.lavamotron.objects.ThermalShardItem;
-import com.vincenthuto.lavamotron.recipe.LavamotronRecipe;
-import com.vincenthuto.lavamotron.recipe.LavamotronSerializer;
+import com.vincenthuto.lavamotron.common.menu.LavamotronMenu;
+import com.vincenthuto.lavamotron.common.menu.LavamotronScreen;
+import com.vincenthuto.lavamotron.common.network.PacketHandler;
+import com.vincenthuto.lavamotron.common.objects.LavamotronBlock;
+import com.vincenthuto.lavamotron.common.objects.LavamotronBlockEntity;
+import com.vincenthuto.lavamotron.common.objects.LavamotronItemBlock;
+import com.vincenthuto.lavamotron.common.objects.ThermalShardItem;
+import com.vincenthuto.lavamotron.common.recipe.LavamotronRecipe;
+import com.vincenthuto.lavamotron.common.recipe.LavamotronSerializer;
 
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;

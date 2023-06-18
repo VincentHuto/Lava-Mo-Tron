@@ -1,4 +1,4 @@
-package com.vincenthuto.lavamotron.objects;
+package com.vincenthuto.lavamotron.common.objects;
 
 import java.util.List;
 

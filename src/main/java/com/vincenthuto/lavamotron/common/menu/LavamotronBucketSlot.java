@@ -1,4 +1,4 @@
-package com.vincenthuto.lavamotron.menu;
+package com.vincenthuto.lavamotron.common.menu;
 
 import net.minecraft.world.Container;
 import net.minecraft.world.inventory.Slot;

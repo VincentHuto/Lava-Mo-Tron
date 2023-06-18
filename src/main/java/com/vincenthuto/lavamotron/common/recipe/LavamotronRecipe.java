@@ -1,8 +1,8 @@
-package com.vincenthuto.lavamotron.recipe;
+package com.vincenthuto.lavamotron.common.recipe;
 
 import java.util.List;
 
-import com.vincenthuto.lavamotron.core.Lavamotron;
+import com.vincenthuto.lavamotron.Lavamotron;
 
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;

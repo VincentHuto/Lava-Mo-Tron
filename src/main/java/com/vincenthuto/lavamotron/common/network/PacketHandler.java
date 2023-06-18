@@ -1,6 +1,6 @@
-package com.vincenthuto.lavamotron.network;
+package com.vincenthuto.lavamotron.common.network;
 
-import com.vincenthuto.lavamotron.core.Lavamotron;
+import com.vincenthuto.lavamotron.Lavamotron;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.network.NetworkRegistry;

@@ -1,11 +1,11 @@
-package com.vincenthuto.lavamotron.integration;
+package com.vincenthuto.lavamotron.compat;
 
 import java.util.Objects;
 
 import javax.annotation.Nonnull;
 
-import com.vincenthuto.lavamotron.core.Lavamotron;
-import com.vincenthuto.lavamotron.recipe.LavamotronRecipe;
+import com.vincenthuto.lavamotron.Lavamotron;
+import com.vincenthuto.lavamotron.common.recipe.LavamotronRecipe;
 
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;

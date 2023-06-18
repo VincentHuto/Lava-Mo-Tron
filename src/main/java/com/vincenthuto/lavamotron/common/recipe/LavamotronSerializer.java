@@ -1,4 +1,4 @@
-package com.vincenthuto.lavamotron.recipe;
+package com.vincenthuto.lavamotron.common.recipe;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
