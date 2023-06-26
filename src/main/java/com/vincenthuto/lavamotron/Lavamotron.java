@@ -3,8 +3,8 @@ package com.vincenthuto.lavamotron;
 import java.util.function.ToIntFunction;
 
 import com.vincenthuto.hutoslib.HutosLib;
+import com.vincenthuto.lavamotron.client.screen.LavamotronScreen;
 import com.vincenthuto.lavamotron.common.menu.LavamotronMenu;
-import com.vincenthuto.lavamotron.common.menu.LavamotronScreen;
 import com.vincenthuto.lavamotron.common.network.PacketHandler;
 import com.vincenthuto.lavamotron.common.objects.LavamotronBlock;
 import com.vincenthuto.lavamotron.common.objects.LavamotronBlockEntity;

@@ -58,8 +58,8 @@ public class LavamotronMenu extends AbstractContainerMenu {
 		this.level = playerInventory.player.level();
 		this.te = container;
 		this.addSlot(new Slot(container, 0, 56, 17));
-		this.addSlot(new LavamotronBucketSlot(this, container, 4, 147, 63));
-		this.addSlot(new LavamotronBucketSlot(this, container, 3, 30, 35));
+		this.addSlot(new LavamotronFluidInputSlot(this, container, 4, 134, 63));
+		this.addSlot(new LavamotronFluidOutputSlot(this, container, 3, 152, 63));
 		this.addSlot(new LavamotronFuelSlot(this, container, 1, 56, 53));
 		this.addSlot(new FurnaceResultSlot(playerInventory.player, container, 2, 116, 35));
 		for (int i = 0; i < 3; ++i) {
@@ -150,14 +150,14 @@ public class LavamotronMenu extends AbstractContainerMenu {
 						return ItemStack.EMPTY;
 					}
 				} else if (this.isFuel(itemstack1)) {
-					if (!this.moveItemStackTo(itemstack1, 1, 2, false)) {
+					if (!this.moveItemStackTo(itemstack1,3, 4, false)) {
 						return ItemStack.EMPTY;
 					}
 				} else if (index >= 3 && index < 30) {
 					if (!this.moveItemStackTo(itemstack1, 30, 39, false)) {
 						return ItemStack.EMPTY;
 					}
-				} else if (index >= 30 && index < 39 && !this.moveItemStackTo(itemstack1, 3, 30, false)) {
+				} else if (index >= 30 && index < 39 && !this.moveItemStackTo(itemstack1, 4, 30, false)) {
 					return ItemStack.EMPTY;
 				}
 			} else if (!this.moveItemStackTo(itemstack1, 3, 39, false)) {

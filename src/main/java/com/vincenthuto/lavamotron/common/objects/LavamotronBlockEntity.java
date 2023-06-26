@@ -72,6 +72,31 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 	public static final int NUM_DATA_VALUES = 4;
 	public static final int BURN_TIME_STANDARD = 200;
 	public static final int BURN_COOL_SPEED = 2;
+	public NonNullList<ItemStack> items = NonNullList.withSize(5, ItemStack.EMPTY);
+	public int litTime;
+
+	public int litDuration;
+	public int cookingProgress;
+	public int cookingTotalTime;
+
+	public boolean liquidMode;
+	// Fluid Stuff
+	public FluidTank tank = new FluidTank(10000);
+
+	public final LazyOptional<IFluidHandler> holder = LazyOptional.of(() -> tank);
+
+	protected LazyOptional<?> outputFluidCap = LazyOptional.empty();
+
+	private final Object2IntOpenHashMap<ResourceLocation> recipesUsed = new Object2IntOpenHashMap<>();
+
+	private final RecipeType<? extends AbstractCookingRecipe> recipeType = Lavamotron.lavamotron_recipe_type.get();
+
+	LazyOptional<? extends net.minecraftforge.items.IItemHandler>[] handlers = SidedInvWrapper.create(this,
+			Direction.UP, Direction.DOWN, Direction.NORTH, Direction.EAST, Direction.SOUTH);
+
+	public LavamotronBlockEntity(BlockPos p_154992_, BlockState p_154993_) {
+		super(Lavamotron.lavamotron_tile.get(), p_154992_, p_154993_);
+	}
 
 	private static void createExperience(ServerLevel p_154999_, Vec3 p_155000_, int p_155001_, float p_155002_) {
 		int i = Mth.floor(p_155001_ * p_155002_);
@@ -103,10 +128,17 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 			--te.litTime;
 		}
 		ItemStack itemstack = te.items.get(1);
+		ItemStack drainStack = te.items.get(3);
 		ItemStack fillStack = te.items.get(4);
 		if (!fillStack.isEmpty()) {
-			if (fillStack.getItem() == Items.BUCKET && te.tank.getFluidAmount() >= 1000) {
-				te.items.set(4, new ItemStack(Items.LAVA_BUCKET));
+			if (fillStack.getItem() instanceof ThermalShardItem && te.tank.getFluidAmount() <= 9000) {
+				te.items.get(4).shrink(1);
+				te.tank.fill(new FluidStack(Fluids.LAVA, 1000), FluidAction.EXECUTE);
+			}
+		}
+		if (!drainStack.isEmpty()) {
+			if (drainStack.getItem() == Items.BUCKET && te.tank.getFluidAmount() >= 1000) {
+				te.items.set(3, new ItemStack(Items.LAVA_BUCKET));
 				te.tank.drain(new FluidStack(te.tank.getFluid(), 1000), FluidAction.EXECUTE);
 			}
 		}
@@ -161,32 +193,6 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 
 	}
 
-	public NonNullList<ItemStack> items = NonNullList.withSize(5, ItemStack.EMPTY);
-	public int litTime;
-
-	public int litDuration;
-	public int cookingProgress;
-	public int cookingTotalTime;
-
-	public boolean liquidMode;
-	// Fluid Stuff
-	public FluidTank tank = new FluidTank(10000);
-
-	public final LazyOptional<IFluidHandler> holder = LazyOptional.of(() -> tank);
-
-	protected LazyOptional<?> outputFluidCap = LazyOptional.empty();
-
-	private final Object2IntOpenHashMap<ResourceLocation> recipesUsed = new Object2IntOpenHashMap<>();
-
-	private final RecipeType<? extends AbstractCookingRecipe> recipeType = Lavamotron.lavamotron_recipe_type.get();
-
-	LazyOptional<? extends net.minecraftforge.items.IItemHandler>[] handlers = SidedInvWrapper.create(this,
-			Direction.UP, Direction.DOWN, Direction.NORTH, Direction.EAST, Direction.SOUTH);
-
-	public LavamotronBlockEntity(BlockPos p_154992_, BlockState p_154993_) {
-		super(Lavamotron.lavamotron_tile.get(), p_154992_, p_154993_);
-	}
-
 	public void awardUsedRecipesAndPopExperience(ServerPlayer p_155004_) {
 		List<Recipe<?>> list = this.getRecipesToAwardAndPopExperience(p_155004_.serverLevel(), p_155004_.position());
 		p_155004_.awardRecipes(list);
@@ -200,45 +206,13 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 			@SuppressWarnings("unchecked")
 			ItemStack resultStack = ((Recipe<WorldlyContainer>) p_155027_).assemble(this, p_266740_);
 			ItemStack currentResultStack = p_155028_.get(2);
-			if (!liquidMode) {
-				if (p_155028_.get(3).isEmpty()) {
-					if (currentResultStack.isEmpty()) {
-						p_155028_.set(2, resultStack.copy());
-					} else if (currentResultStack.is(resultStack.getItem())) {
-						currentResultStack.grow(resultStack.getCount());
-					}
-				} else {
-					if (currentResultStack.isEmpty()) {
-						if (!liquidMode) {
-							p_155028_.set(2, new ItemStack(Items.LAVA_BUCKET));
-							p_155028_.get(3).shrink(1);
-						}
-					} else {
-						if (!liquidMode) {
-							currentResultStack.grow(currentResultStack.getCount());
-							this.cookingProgress = 0;
-						}
-					}
-				}
+			if (tank.getFluidAmount() < tank.getCapacity()) {
+				tank.fill(new FluidStack(Fluids.LAVA, 1000), FluidAction.EXECUTE);
 			} else {
-				if (tank.getFluidAmount() < tank.getCapacity()) {
-					tank.fill(new FluidStack(Fluids.LAVA, 1000), FluidAction.EXECUTE);
-				} else {
-					if (p_155028_.get(3).isEmpty()) {
-						if (currentResultStack.isEmpty()) {
-							p_155028_.set(2, resultStack.copy());
-						} else if (currentResultStack.is(resultStack.getItem())) {
-							currentResultStack.grow(resultStack.getCount());
-						}
-					} else {
-						if (currentResultStack.isEmpty()) {
-							p_155028_.set(2, new ItemStack(Items.LAVA_BUCKET));
-							p_155028_.get(3).shrink(1);
-						} else {
-							currentResultStack.grow(currentResultStack.getCount());
-							this.cookingProgress = 0;
-						}
-					}
+				if (currentResultStack.isEmpty()) {
+					p_155028_.set(2, resultStack.copy());
+				} else if (currentResultStack.is(resultStack.getItem())) {
+					currentResultStack.grow(resultStack.getCount());
 				}
 			}
 			itemstack.shrink(1);
@@ -249,14 +223,14 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 	}
 
 	@SuppressWarnings("unchecked")
-	private boolean canBurn(RegistryAccess p_266924_, @Nullable Recipe<?> p_155006_, NonNullList<ItemStack> p_155007_,
+	private boolean canBurn(RegistryAccess access, @Nullable Recipe<?> recipe, NonNullList<ItemStack> stacks,
 			int p_155008_) {
-		if (!p_155007_.get(0).isEmpty() && p_155006_ != null) {
-			ItemStack itemstack = ((Recipe<WorldlyContainer>) p_155006_).assemble(this, p_266924_);
+		if (!stacks.get(0).isEmpty() && recipe != null) {
+			ItemStack itemstack = ((Recipe<WorldlyContainer>) recipe).assemble(this, access);
 			if (itemstack.isEmpty()) {
 				return false;
 			} else {
-				ItemStack resultStack = p_155007_.get(2);
+				ItemStack resultStack = stacks.get(2);
 				if (liquidMode) {
 					if (tank.getFluidAmount() < tank.getCapacity()) {
 						return true;
@@ -567,14 +541,14 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 	}
 
 	@Override
-	public void setItem(int p_58333_, ItemStack p_58334_) {
-		ItemStack itemstack = this.items.get(p_58333_);
-		boolean flag = !p_58334_.isEmpty() && ItemStack.isSameItemSameTags(itemstack, p_58334_);
-		this.items.set(p_58333_, p_58334_);
-		if (p_58334_.getCount() > this.getMaxStackSize()) {
-			p_58334_.setCount(this.getMaxStackSize());
+	public void setItem(int index, ItemStack stack) {
+		ItemStack itemstack = this.items.get(index);
+		boolean flag = !stack.isEmpty() && ItemStack.isSameItemSameTags(itemstack, stack);
+		this.items.set(index, stack);
+		if (stack.getCount() > this.getMaxStackSize()) {
+			stack.setCount(this.getMaxStackSize());
 		}
-		if (p_58333_ == 0 && !flag) {
+		if (index == 0 && !flag) {
 			this.cookingTotalTime = getTotalCookTime(this.level, this.recipeType, this);
 			this.cookingProgress = 0;
 			this.setChanged();

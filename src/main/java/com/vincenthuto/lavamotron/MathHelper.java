@@ -1,4 +1,4 @@
-package com.vincenthuto.lavamotron.common.menu;
+package com.vincenthuto.lavamotron;
 
 import java.util.Random;
 
