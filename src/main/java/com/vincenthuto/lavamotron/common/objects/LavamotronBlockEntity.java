@@ -206,7 +206,28 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 			@SuppressWarnings("unchecked")
 			ItemStack resultStack = ((Recipe<WorldlyContainer>) p_155027_).assemble(this, p_266740_);
 			ItemStack currentResultStack = p_155028_.get(2);
-			if (tank.getFluidAmount() < tank.getCapacity()) {
+
+			if (!liquidMode) {
+				if (p_155028_.get(3).isEmpty()) {
+					if (currentResultStack.isEmpty()) {
+						p_155028_.set(2, resultStack.copy());
+					} else if (currentResultStack.is(resultStack.getItem())) {
+						currentResultStack.grow(resultStack.getCount());
+					}
+				} else {
+					if (currentResultStack.isEmpty()) {
+						if (!liquidMode) {
+							p_155028_.set(2, new ItemStack(Items.LAVA_BUCKET));
+							p_155028_.get(3).shrink(1);
+						}
+					} else {
+						if (!liquidMode) {
+							currentResultStack.grow(currentResultStack.getCount());
+							this.cookingProgress = 0;
+						}
+					}
+				}
+			} else if (tank.getFluidAmount() < tank.getCapacity()) {
 				tank.fill(new FluidStack(Fluids.LAVA, 1000), FluidAction.EXECUTE);
 			} else {
 				if (currentResultStack.isEmpty()) {
@@ -252,11 +273,10 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 					} else if (!ItemStack.isSameItem(resultStack, itemstack)) {
 						return false;
 					} else if (resultStack.getCount() + itemstack.getCount() <= p_155008_
-							&& resultStack.getCount() + itemstack.getCount() <= resultStack.getMaxStackSize()) { // fix:
+							&& resultStack.getCount() + itemstack.getCount() <= resultStack.getMaxStackSize()) {
 						return true;
 					} else {
-						return resultStack.getCount() + itemstack.getCount() <= itemstack.getMaxStackSize(); // Forge
-						// fix:
+						return resultStack.getCount() + itemstack.getCount() <= itemstack.getMaxStackSize();
 					}
 				}
 			}
