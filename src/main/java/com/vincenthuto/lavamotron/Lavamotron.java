@@ -67,8 +67,8 @@ public class Lavamotron {
 
 	// Objects
 	public static final RegistryObject<Block> lavamotron_block = BLOCKS.register("lavamotron",
-			() -> new LavamotronBlock(BlockBehaviour.Properties.of().requiresCorrectToolForDrops().strength(1.5F, 6.0F)
-					.lightLevel(litBlockEmission(13))));
+			() -> new LavamotronBlock(BlockBehaviour.Properties.of().requiresCorrectToolForDrops()
+					.requiresCorrectToolForDrops().strength(3.5F).lightLevel(litBlockEmission(13))));
 
 	public static final RegistryObject<Item> lavamotron_item_block = ITEMS.register("lavamotron",
 			() -> new LavamotronItemBlock(lavamotron_block.get(), new Item.Properties()));

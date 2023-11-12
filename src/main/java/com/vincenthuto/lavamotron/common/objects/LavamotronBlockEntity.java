@@ -293,8 +293,17 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 	}
 
 	@Override
-	public boolean canPlaceItemThroughFace(int p_58336_, ItemStack p_58337_, @Nullable Direction p_58338_) {
-		return this.canPlaceItem(p_58336_, p_58337_);
+	public boolean canPlaceItemThroughFace(int index, ItemStack stack, @Nullable Direction faceDir) {
+		if (index == 3) {
+			if (items.get(3).isEmpty()) {
+				return this.canPlaceItem(index, stack);
+			} else {
+				return false;
+			}
+		} else {
+			return this.canPlaceItem(index, stack);
+		}
+
 	}
 
 	@Override
