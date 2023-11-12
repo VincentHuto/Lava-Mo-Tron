@@ -62,7 +62,7 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 	protected static final int SLOT_RESULT = 2;
 	public static final int DATA_LIT_TIME = 0;
 	private static final int[] SLOTS_FOR_UP = new int[] { 0 };
-	private static final int[] SLOTS_FOR_DOWN = new int[] { 2 };
+	private static final int[] SLOTS_FOR_DOWN = new int[] { 2,3 };
 	private static final int[] SLOTS_FOR_SIDES = new int[] { 1 };
 	private static final int[] SLOTS_FOR_EAST = new int[] { 3 };
 	private static final int[] SLOTS_FOR_SOUTH = new int[] { 1 };
@@ -305,11 +305,16 @@ public class LavamotronBlockEntity extends BaseContainerBlockEntity
 		}
 
 	}
+	
+	@Override
+	public boolean canTakeItem(Container pContainer, int pIndex, ItemStack pStack) {
+		return super.canTakeItem(pContainer, pIndex, pStack);
+	}
 
 	@Override
-	public boolean canTakeItemThroughFace(int p_58392_, ItemStack p_58393_, Direction p_58394_) {
-		return (p_58394_ == Direction.DOWN && p_58392_ == 1)
-				? p_58393_.is(Items.WATER_BUCKET) || p_58393_.is(Items.BUCKET)
+	public boolean canTakeItemThroughFace(int index, ItemStack stack, Direction face) {
+		return (face == Direction.DOWN )
+				? stack.is(Items.WATER_BUCKET) || !stack.is(Items.BUCKET) || stack.is(Items.LAVA_BUCKET)
 				: true;
 	}
 
