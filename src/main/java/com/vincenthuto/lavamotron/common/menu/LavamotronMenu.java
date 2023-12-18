@@ -132,32 +132,32 @@ public class LavamotronMenu extends AbstractContainerMenu {
 	}
 
 	@Override
-	public ItemStack quickMoveStack(Player player, int index) {
+	public ItemStack quickMoveStack(Player pPlayer, int pIndex) {
 		ItemStack itemstack = ItemStack.EMPTY;
-		Slot slot = this.slots.get(index);
+		Slot slot = this.slots.get(pIndex);
 		if (slot != null && slot.hasItem()) {
 			ItemStack itemstack1 = slot.getItem();
 			itemstack = itemstack1.copy();
-			if (index == 2) {
+			if (pIndex == 2) {
 				if (!this.moveItemStackTo(itemstack1, 3, 39, true)) {
 					return ItemStack.EMPTY;
 				}
 
 				slot.onQuickCraft(itemstack1, itemstack);
-			} else if (index != 1 && index != 0) {
+			} else if (pIndex != 1 && pIndex != 0) {
 				if (this.canSmelt(itemstack1)) {
 					if (!this.moveItemStackTo(itemstack1, 0, 1, false)) {
 						return ItemStack.EMPTY;
 					}
 				} else if (this.isFuel(itemstack1)) {
-					if (!this.moveItemStackTo(itemstack1,3, 4, false)) {
+					if (!this.moveItemStackTo(itemstack1, 1, 2, false)) {
 						return ItemStack.EMPTY;
 					}
-				} else if (index >= 3 && index < 30) {
+				} else if (pIndex >= 3 && pIndex < 30) {
 					if (!this.moveItemStackTo(itemstack1, 30, 39, false)) {
 						return ItemStack.EMPTY;
 					}
-				} else if (index >= 30 && index < 39 && !this.moveItemStackTo(itemstack1, 4, 30, false)) {
+				} else if (pIndex >= 30 && pIndex < 39 && !this.moveItemStackTo(itemstack1, 3, 30, false)) {
 					return ItemStack.EMPTY;
 				}
 			} else if (!this.moveItemStackTo(itemstack1, 3, 39, false)) {
@@ -174,7 +174,7 @@ public class LavamotronMenu extends AbstractContainerMenu {
 				return ItemStack.EMPTY;
 			}
 
-			slot.onTake(player, itemstack1);
+			slot.onTake(pPlayer, itemstack1);
 		}
 
 		return itemstack;
