@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:smelting",
+  "category": "food",
+  "cookingtime": 200,
+  "experience": 1.0,
+  "ingredient": {
+    "item": "eelcologicaldisasters:cooked_eel"
+  },
+  "result": "eelcologicaldisasters:raw_eel"
+}
