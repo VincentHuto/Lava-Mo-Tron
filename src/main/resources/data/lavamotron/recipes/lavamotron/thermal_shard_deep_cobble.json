@@ -1,0 +1,10 @@
+{
+  "type": "lavamotron:lavamotron",
+  "ingredient": {
+      "tag": "minecraft:stone_crafting_materials"
+  },
+  "result": "lavamotron:thermal_shard",
+  "count" : 1,
+  "experience": 1.0,
+  "cookingtime": 200
+}

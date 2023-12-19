@@ -1,0 +1,8 @@
+{
+  "entity.eelcologicaldisasters.electric_eel": "Electric Eel",
+  "item.eelcologicaldisasters.car_battery": "Car Battery",
+  "item.eelcologicaldisasters.cooked_eel": "Cooked Eel",
+  "item.eelcologicaldisasters.raw_eel": "Raw Eel",
+  "item.eelcologicaldisasters.spawn_egg_electric_eel": "Spawn Egg Electric Eel",
+  "item_group.eelcologicaldisasters.eelcologicaldisasterstab": "Eelcological Disaster"
+}

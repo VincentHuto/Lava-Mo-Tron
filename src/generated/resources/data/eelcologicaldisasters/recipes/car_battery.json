@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "minecraft:copper_ingot"
+    },
+    "I": {
+      "item": "minecraft:deepslate_tiles"
+    },
+    "S": {
+      "item": "minecraft:smooth_stone"
+    },
+    "W": {
+      "item": "minecraft:water_bucket"
+    }
+  },
+  "pattern": [
+    "CSC",
+    "IWI",
+    "SSS"
+  ],
+  "result": {
+    "item": "eelcologicaldisasters:car_battery"
+  },
+  "show_notification": true
+}
