@@ -1,6 +1,0 @@
-{
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "eelcologicaldisasters:item/car_battery"
-  }
-}
