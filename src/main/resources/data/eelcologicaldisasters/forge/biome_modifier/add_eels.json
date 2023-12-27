@@ -1,0 +1,12 @@
+{
+  "type": "eelcologicaldisasters:fish_spawn",
+  "spawn": {
+    "type": "eelcologicaldisasters:electric_eel",
+    "weight": 2,
+    "minCount": 2,
+    "maxCount": 3
+  },
+  "includeBiomes": ["#minecraft:is_river","#minecraft:jungle","#minecraft:mangrove_swamp"],
+  "excludeBiomes": ["#forge:is_cold"],
+  "and": false
+}
